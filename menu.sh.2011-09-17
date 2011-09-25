@@ -1,0 +1,495 @@
+#!/bin/bash
+
+CALLER=`basename $0`
+TEMP="tmp"
+#NETTOYAGE DU FICHIER TEMPORAIRE D ECRITURE
+#trap "{ echo \"TRAP: recu signal EXIT\"; }" EXIT
+#trap "{ echo \"TRAP: nettoyage du fichier tempoaire d écriture: $TEMP\"; rm -f $TEMP; exit 255; }" SIGINT SIGTERM SIGCHLD EXIT
+# faire un trap de nettoyage si le caller est creetache et qu'on en sort EXIT
+# faire un trap de nettoyage si ctrl d ou ctrl c pour dégager les ficheir teporaires SIGTERM SIGINT
+
+
+trap "{ if [ \"$FUNCNAME\" != \"\" ]; then echo \"DEBUG: TRAP: SORTIE DE fonction $FUNCNAME\"; else echo \"DEBUG: TRAP: sortie de CALLER $CALLER\"; exit 255; fi;    }" EXIT
+
+
+function usage()
+{
+if [ "$CALLER" = "journal" ]; then
+	echo "ERR: $FUNCNAME: USAGE: $CALLER [-T(est seul)] -u(til) nomutil 	-n(nummcompte) -N(omcompte) -s(ensope)D|C -m(ontantope) -l(ibelleope)"
+elif [ "$CALLER" = "depart" ]; then
+	echo "ERR: $FUNCNAME: USAGE: creation compte: $CALLER [-T(est seul)] -u(tilisateur) <nom util> -d|--depart <val depart>"
+
+elif [ "$CALLER" = "solde" ]; then
+	echo "ERR: $FUNCNAME: USAGE: calcul soldes: $CALLER sans param"
+
+elif [ "$CALLER" = "courses" ]; then
+	echo "ERR: $FUNCNAME: USAGE: $CALLER [-T(est seul)] -u(til) <nomutil> -m(ontant) <montant ope> [-d|--date <ladate en anglais ou AAAA-MM-J>"
+else
+	echo "ERR: $FUNCNAME: $CALLER: operateur non implemente. essayez journal depart ou courses, coursesco, coursespu, coursescohier"
+
+
+fi
+echo "ERR: $FUNCNAME: je vais maintenant quitter avec un code d erreur"
+exit 1
+}
+
+function aumoinsunarg(){
+E_OPTERR=65
+if [ "$#" -eq 0 ]
+then # il faut au moins un arg
+	echo "ERR: $FUNCNAME : il faut au moins un arg pour $CALLER"
+	usage
+fi
+}
+
+
+FICHIERDEST="compta.txt"
+DEBUG=1
+FORCE=1
+function ajouteentree(){
+
+while getopts ":u:n:N:s:m:l:T-:d:F" OptionReconnue
+do
+	case $OptionReconnue in
+
+		- ) echo "ERR: $FUNCNAME: options longues pas encore pretes pour ajouteentree"; 
+			usage;; 
+		F ) FORCE=0 ;;
+		T ) DEBUG=0;;
+		d ) LADATE=$(date --rfc-3339='date' --date="${OPTARG}");; 
+		u ) UTIL=${OPTARG} ;;
+		n ) NUMCOMPTE=${OPTARG};;
+		N ) NOMCOMPTE=${OPTARG};;
+		s ) if [ "${OPTARG}" != "C" ] && [ "${OPTARG}" != "D" ]
+			then 
+				echo "ERR: $FUNCNAME: param SENSOPE :le param s(ensope) requiert\
+				       	pour arg soit D(ebit) soit C(redit)"
+				exit 1
+			else 
+				SENSOPE=${OPTARG}
+		fi;;
+		m ) MONTANTOPE=${OPTARG};;
+		l ) LIBOPE=${OPTARG};;
+		? ) echo "ERR: $FUNCNAME: parseargs: option ${OPTARG}" inconnue; usage;;
+		: ) echo "ERR: $FUNCNAME: parseargs: une option est requise pour ${OPTARG}"; usage;;
+	        * ) echo "ERR: $FUNCNAME: parseargs: alors là je ne vois pas ce qui a pu se passer"; 
+		usage;;	
+	esac
+done
+shift $(($OPTIND - 1))
+
+echo "INFO: $CALLER: $FUNCNAME: verification du fait que toutes les variables nécessaires existent"
+UTIL=${UTIL:-ERREURCHPVIDE}
+NUMCOMPTE=${NUMCOMPTE:-ERREURCHPVIDE}
+NOMCOMPTE=${NOMCOMPTE:-ERREURCHPVIDE}
+SENSOPE=${SENSOPE:-ERREURCHPVIDE}
+MONTANTOPE=${MONTANTOPE:-ERREURCHPVIDE}
+LIBOPE=${LIBOPE:-ERREURCHPVIDE}
+LADATE=${LADATE:-`date --rfc-3339='date'`} 
+echo "INFO: $CALLER: $FUNCNAME: formatage de la chaine à saisir dans le journal"
+ENTETE="date:util:numcompte:nomcompte:sensope:montantope:libope"
+ENTREE="$LADATE:$UTIL:$NUMCOMPTE:\"$NOMCOMPTE\":$SENSOPE:$MONTANTOPE:\"$LIBOPE\""
+
+if [ "${FORCE}" -eq "0" ];
+then	
+	echo "INFO: $CALLER: $FUNCNAME: $FUNCNAME appelé avec FORCE vallant ${FORCE}"
+	echo "INFO: $CALLER: $FUNCNAME: donc pas de vérif dans la valeur des parametres"
+	echo "INFO: $CALLER: $FUNCNAME: c'est utile pour creer des modeles generiques"
+	echo "DEBUG: $CALLER: $FUNCNAME: création du fichier d'écriture temporaire $TEMP"
+	touch "$TEMP"
+	if [ -e "$TEMP" ];
+		then 
+			echo "DEBUG: $CALLER: $FUNCNAME: le fichier temporaire $TEMP existe"
+		else 
+			echo "ERR: $CALLER: $FUNCNAME: le fichier temporaire $TEMP n'existe pas"
+	       	usage
+       fi	       
+	echo "INFO: $CALLER : $FUNCNAME: écriture dans le fichier temporaire $TEMP"	
+       echo "$ENTREE" > "$TEMP"
+else
+	echo "INFO: $CALLER: $FUNCNAME: $FUNCNAME appelé avec FORCE vallant ${FORCE}"
+	echo "INFO : $CALLER : $FUNCNAME : donc vérif des params vides"
+	if [ "${UTIL}" = "ERREURCHPVIDE" ] || [ "${NUMCOMPTE}" = "ERREURCHPVIDE" ];
+	then
+		echo "ERR: $CALLER :$FUNCNAME: l un des champs nécessaires est vide"
+		echo "ERR: $CALLER: $FUNCNAME: $ENTETE"
+		echo "ERR: $CALLER: $FUNCNAME: $ENTREE"
+		echo "ERR: $CALLER :$FUNCNAME: je vais donc sortir en code err \
+			et afficher usage cmd" 
+		usage
+	fi
+	
+	
+fi
+
+if [ "${DEBUG}" -eq 0 ]; then
+	echo "INFO : $CALLER: $FUNCNAME: DEBUG VAUT ${DEBUG}"
+	echo "INFO : $CALLER: $FUNCNAME: 0 -> VRAI 1-> FAUX"
+	echo "INFO : $CALLER: $FUNCNAME: lanchement en mode DEBUG: affichage seul pas ecriture fich"
+	echo "DEBUG: $CALLER: $FUNCNAME: BASH_SUBSHELL vaut $BASH_SUBSHELL"
+	echo "DEBUG: $CALLER: $FUNCNAME: BASHPID vaut $BASHPID"
+	echo "OKAY : $CALLER: $FUNCNAME: $ENTREE"
+else  
+	if [ ! -e "${FICHIERDEST}" ]; then
+		echo "INFO: $FUNCNAME: FICHIERDEST EXISTEPAS. je le cree"
+		echo "${ENTETE}" > "${FICHIERDEST}"
+	fi
+	echo "OKAY : $CALLER : $FUNCNAME: ecriture dans $FICHIERDEST"
+	echo "OKAY : $CALLER : $FUNCNAME: de ${ENTREE}" 
+	echo "${ENTREE}" >> "$FICHIERDEST"
+
+fi
+if [ -e "$FICHIERDEST" ];  then
+	echo "INFO: $FUNCNAME: le fichier $FICHIERDEST a bien ete créé"
+else
+	echo "INFO: $FUNCNAME: le fichier $FICHIERDEST existe pas"
+fi
+
+}
+
+
+function depart()
+{
+echo "INFO : entree dans $FUNCNAME"
+while getopts ":u:d:-:T"  OPTIONS_dep
+do
+	case $OPTIONS_dep in
+		T) DEBUG=0;;
+		u) UTILISATEUR=${OPTARG};;
+		d) VAL_DEPART=${OPTARG};;
+		-) LONGOPT="${OPTARG%%=*}"; LONGARG="${OPTARG#*=}";
+			case $LONGOPT in 
+				depart) VAL_DEPART=${LONGARG};;
+				*) echo "option longue pas permise  -- $LONGOPT";
+					usage;;
+			esac	
+			;;
+	esac
+done
+shift $(($OPTIND - 1 ))
+
+if [ "${DEBUG}" -eq 0 ]; then
+echo "INFO: $FUNCNAME : param -T passé à $FUNCNAME donc DEBUG."
+echo "INFO: $FUNCNAME : DEBUG vaut: ${DEBUG}. 0->VRAI"
+echo "INFO: $FUNCNAME: ouverture compte 1/2 : ajout de la partie bq " 
+echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 512 -N "Banque" -s D \
+	-m ${VAL_DEPART:-ERREURCHPVIDE} -l "ouverture compte" \
+       	-T
+
+echo "INFO: $FUNCNAME: ouverture compte 2/2 : ajout de la partie capital "
+echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 101 -N "Capital social" -s C \
+	-m ${VAL_DEPART:-ERREURCHPVIDE} -l "ouverture compte"  \
+	-T
+else
+echo "INFO: $FUNCNAME: ecriture compte 1/2: ajout partie bq"
+echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 512 -N "Banque" \
+	-s D -m ${VAL_DEPART:-ERREURCHPVIDE} -l "ouverture compte"
+
+echo "INFO: $FUNCNAME: ecriture compte 2/2: ajout partie capital"
+echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 101 -N "Capital social" \
+	-s C -m ${VAL_DEPART:-ERREURCHPVIDE} -l "ouverture compte" 
+	
+fi
+
+}
+
+
+function calculesolde(){
+#TODO fonction en cours d'écriture
+#POUR CHAQUE UTILISATEUR FAIRE
+ #existence fichier compta sinon erreur et sortie
+ echo "INFO: $CALLER : entree dans :$FUNCNAME"
+ if [ ! -e "${FICHIERDEST}" ];then 
+	echo "ERR $CALLER: $FUNCNAME: le fichier ${FICHIERDEST} existe pas"
+	echo "je sors avec msg erreur"
+        usage
+else	
+	echo "INFO : $CALLER : $FUNCNAME : $FICHIERDEST existe, on continue" 
+	echo "DEBUG : $CALLER : $FUNCNAME : les utilisateurs uniques de $FICHIERDEST sont"
+	gawk -F: 'NR>1{print $2}' ${FICHIERDEST} |sort |uniq
+	echo "DEBUG : $CALLER : $FUNCNAME les premieres depenses du cpte..." 
+	# ajouter depenses courses et depenses post-datees
+	# avant de continuer
+fi
+}
+
+
+
+function courses(){
+DEBUG=1
+echo "INFO : entree dans $FUNCNAME"
+while getopts ":u:d:-:m:T"  OPTIONS_dep
+do
+	case $OPTIONS_dep in
+		T) DEBUG=0;;
+		u) UTILISATEUR=${OPTARG};;
+		d) LADATE="${OPTARG}";;
+		m) MONTANT=${OPTARG};;
+		-) LONGOPT="${OPTARG%%=*}"; LONGARG="${OPTARG#*=}";
+			case $LONGOPT in 
+				date) LADATE="${LONGARG}";;
+				*) echo "option longue pas permise  -- $LONGOPT";
+					usage;;
+			esac	
+			;;
+	esac
+done
+shift $(($OPTIND - 1 ))
+LADATE="${LADATE:-PASRENSEIGNEE}"
+echo "INFO: $FUNCNAME : LADATEVAUT $LADATE"
+if [ "$LADATE" = "PASRENSEIGNEE" ];
+then
+	if [ "${DEBUG}" -eq 0 ]; then
+		echo "INFO: $FUNCNAME : param -T passé à $FUNCNAME donc DEBUG."
+		#echo "INFO: $FUNCNAME : DEBUG vaut: ${DEBUG}. 0->VRAI"
+		echo "INFO: $FUNCNAME: courses alimentaires 1/2 :  augmentation frais de courses" 
+		echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+		journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 6257 -N "frais restauration" \
+			-s D 	-m ${MONTANT:-ERREURCHPVIDE} -l "courses alimentaires" \
+       			-T
+
+		echo "INFO: $FUNCNAME: courses alimentaires 2/2 : diminution du compte en bq "
+		echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+		journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 512 -N "Banque" -s C \
+			-m ${MONTANT:-ERREURCHPVIDE} -l "courses alimentaires"  \
+			-T
+	else
+		echo "INFO: $FUNCNAME: courses alimentaires 1/2: augmentation frais de courses"
+		echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+		journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 6257 -N "frais restauration" \
+		-s D -m ${MONTANT:-ERREURCHPVIDE} -l "courses alimentaires"
+
+		echo "INFO: $FUNCNAME: courses alimentaires 2/2: diminution du compte en bq"
+		echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+		journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 512 -N "Banque" \
+			-s C -m ${MONTANT:-ERREURCHPVIDE} -l "courses alimentaires" 
+	
+	fi
+
+else
+	if [ "${DEBUG}" -eq 0 ]; then
+		echo "INFO: $FUNCNAME : param -T passé à $FUNCNAME donc DEBUG."
+		#echo "INFO: $FUNCNAME : DEBUG vaut: ${DEBUG}. 0->VRAI"
+		echo "INFO: $FUNCNAME: courses alimentaires 1/2 :  augmentation frais de courses" 
+		echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+		journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 6257 -N "frais restauration" \
+			-s D 	-m ${MONTANT:-ERREURCHPVIDE} -l "courses alimentaires" \
+			-d "${LADATE}" \
+			-T
+
+		echo "INFO: $FUNCNAME: courses alimentaires 2/2 : diminution du compte en bq "
+		echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+		journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 512 -N "Banque" -s C \
+			-m ${MONTANT:-ERREURCHPVIDE} -l "courses alimentaires"  \
+			-d "${LADATE}" \
+			-T
+
+	else
+		echo "INFO: $FUNCNAME: courses alimentaires 1/2: augmentation frais de courses"
+		echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+		journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 6257 -N "frais restauration" \
+		-s D -m ${MONTANT:-ERREURCHPVIDE} -l "courses alimentaires" \
+		-d "${LADATE}"
+
+		echo "INFO: $FUNCNAME: courses alimentaires 2/2: diminution du compte en bq"
+		echo "INFO: $FUNCNAME: appel de journal depuis $FUNCNAME"
+		journal -u ${UTILISATEUR:-ERREURCHPVIDE} -n 512 -N "Banque" \
+			-s C -m ${MONTANT:-ERREURCHPVIDE} -l "courses alimentaires" \
+			-d "${LADATE}"
+	
+	fi
+
+
+
+fi
+
+} #fin de courses
+
+
+
+
+
+
+function coursesco(){
+courses -u co -m $1 
+}
+
+function coursespu(){
+courses -u pu -m $1
+}
+
+function coursescohier(){
+courses -u co -m $1 --date="yesterday"
+
+}
+
+
+function loyerpu(){
+
+CHAINE="#GENERE PAR CMDLOYERPU\n"
+CHAINE="${CHAINE}1/3 pmt loyerpar puce\n"
+echo -e "${CHAINE}"
+
+
+}
+
+
+
+function creetypetache(){
+
+
+#NECESSAIRE: NOMFICHIER 
+# menu qui boucle pour chaque ligne jusque considere que fini (f + entree)
+echo "DEBUG: $CALLER: $FUNCNAME: BASH_SUBSHELL vaut $BASH_SUBSHELL"
+echo "DEBUG: $CALLER: $FUNCNAME: BASHPID vaut: $BASHPID"
+echo "nom du fichier?"
+read FICHIER
+FICHIER="${FICHIER}".mod
+if [ -e "${FICHIER}" ];
+then
+	echo "ERR : $FUNCNAME: le fichier $FICHIER existe déjà"
+	echo "ERR : $FUNCNAME: je ne vais pas écraser un fichier preexistant."
+	echo "ERR : $FUNCNAME: je vais donc sortir avec un msg d'erreur non nul"
+	echo "ERR : $FUNCNAME: en lancant usage, le raccourcis le plus rapide"
+	usage
+else
+	echo "INFO: $FUNCNAME: le fichier $FICHIER n'existe pas encore"
+	echo "INFO: $FUNCNAME: en le creant je n'ecraserai donc aucune info existante"
+	echo "INFO: $FUNCNAME: je vais donc le créer"
+fi
+echo "INFO: $FUNCNAME: creation de $FICHIER"
+touch "${FICHIER}"
+if [ -e "${FICHIER}" ];
+then 
+	echo "INFO: $FUNCNAME: ok $FICHIER cree."
+else
+	echo "ERR: $FUNCNAME: $FICHIER non cree. je vais sortir avec un msg ERR non nul"
+	echo "ERR: $FUNCNAME: en appelant usage, le raccourci le plus rapide"
+	usage
+
+fi
+PREDBOUCLER="True"
+while [ "${PREDBOUCLER}" = "True" ];
+do
+	echo "$FUNCNAME: boucle lignes: rien pour l'instant"
+	if [ -e "${FICHIER}" ];
+	then
+		echo "DEBUG: $FUNCNAME : boucle ligne : $FICHIER EXISTE. \
+			on peut donc écrire une ligne dedans"
+		echo "DEBUG: $FUNCNAME : boucle lignes : boucle sur les params pour 1 ligne"
+		echo "DEBUG: $FUNCNAME : boucle lignes : rien pour l'instant"
+		echo "DEBUG: $FUNCNAME : boucle lignes : appel de journal -T -F pour verif"
+		echo "INFO: $FUNCNAME : elemt commun a chq ligne: saisie du nom de \
+			l'opération"
+		# éléménts commun:
+		# -l "$LIBELLEOPE" -d "$LADATE" 
+		# -T pour le debug sinon écrit dans compta.txt
+		# -F pour le force sinon refuse les champs vides
+		# -u "VIDE"
+		# -d "VIDE"
+		# -
+		# date:util:sensope:numcpte:nomcompte:montant:libelle
+		# journal u n N s m l T F
+		# -u "VIDE" -d "VIDE" -T -F 
+		read LIBELLEOPE
+		echo "DEBUG: $FUNCNAME: boucle sur comptes à débiter"
+		echo "DEBUG: $FUNCNAME: taper un numero de compte à débiter ou F pour fin"
+		echo "DEBUG: $FUNCNAME: et passer aux comptes à crediter"
+		while [ "$NUMCOMPTE" != "F" ];
+		do
+			echo "DEBUG: $FUNCNAME: boucle de saisie des cdts. (F pour sortir)"
+			echo "DEBUG: $FUNCNAME: saisir un num de compte débité \
+				et son nom ou F"
+			read NUMCOMPTE
+			if [ "$NUMCOMPTE" != "F" ];
+			then
+				read NOMCOMPTE
+				journal -u "vide" -n "$NUMCOMPTE" -N "$NOMCOMPTE" \
+					-s D -m "vide" -l "$LIBELLEOPE" -T -F
+				cat "$TEMP" >> "${FICHIER}"
+				echo voyons le contenu de "${FICHIER}:"
+				cat "${FICHIER}"
+
+			fi
+		done
+		echo "DEBUG: $FUNCNAME: boucle lignes : récupération de la valeur de entree"
+		echo "DEBUG: $FUNCNAME: en dehors de journal pour voir si utilisable sans"
+		echo "DEBUG: $FUNCNAME: modif de journal"
+		echo "DEBUG: $FUNCNAME: en dehors de journal, ENTREE vaut $ENTREE"
+		echo "DEBUG: $FUNCNAME: merche pas, vais donc utiliser le pattern fich temp"
+		echo "DEBUG: $FUNCNAME: + nettoyage à la fin."
+		echo "DEBUG: $FUNCNAME: lecture du fichier d'écriture temporaire $TEMP"
+		cat $TEMP
+
+	fi
+	echo "DEBUG: $FUNCNAME: et maintenant passage du param PREDBOUCLER\
+	       	à False pour sortir de la boucle"
+	PREDBOUCLER="False"
+	echo "DEBUG: $FUNCNAME: boucle lignes: \
+		et maintenant je vais sortir avec un msg ERR non nul"
+	usage
+done
+
+
+
+
+}
+
+function getuser(){
+# si le fichier d'acces existe, alors user est le champ numero 2
+if [ -e "$FICHIEDEST" ];
+then
+	echo "DEBUG: $FUNCNAME: le fichier $FICHIERDEST existe, on va pouvoir le parser"
+	CHAMPUTIL="$(gawk -F : '{ print $2; }' $FICHIERDEST | sort | uniq)"
+        echo "$FUNCNAME: les utilisateurs sont : $CHAMPUTIL"	
+else
+	echo "DEBUG: :$FUNCNAME: le fichier $FICHIERDEST n'existe pas. on ne peut donc pas le parser"
+
+
+fi
+
+
+
+}
+
+case $CALLER in
+	journal ) echo "INFO: CLIPARSE: les parametres: $@ sont passes a journal"; 
+		aumoinsunarg "$@"; 
+		ajouteentree "$@" ;;
+
+	depart ) echo "INFO: CLIPARSE: les parametres: $@ sont passes a dep"; 
+		aumoinsunarg "$@"; 
+		depart "$@" ;;
+
+	soldes ) echo "INFO: CLIPARSE: calculsolde lance sans param"; 
+		calculesolde ;;
+
+	courses ) echo "INFO: CLIPARSE: les params $@ st passes a courses"; 
+		aumoinsunarg "$@";
+		courses "$@";;
+	coursesco) echo "INFO: CLIPARSE: les params $@ st passes a courseco";
+		aumoinsunarg "$@";
+		coursesco "$@";;
+	
+	coursespu) echo "INFO: CLIPARSE: les params $@ st passes a coursepu";
+		aumoinsunarg "$@";
+		coursespu "$@";;
+	coursescohier) echo "INFO: CLIPARSE: les params $@ st passes a coursecohier";
+		aumoinsunarg "$@";
+		coursescohier "$@";;
+	loyerpu) loyerpu;;
+	
+	creetache) creetypetache;;
+
+	getuser) getuser;;
+
+
+	* ) echo "ERR: CLIPARSE: appelant $CALLER non reconnu";;
+esac
+
+#TODO : ajouter une commande de vérif de balanc
+#TODO : donc ajouter une commande qui écrit les soldes de cpte avant et apres opération
