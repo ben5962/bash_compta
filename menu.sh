@@ -2,6 +2,10 @@
 
 CALLER=`basename $0`
 TEMP="tmp"
+SUCCES=0
+ECHECBAL=200
+
+
 #NETTOYAGE DU FICHIER TEMPORAIRE D ECRITURE
 #trap "{ echo \"TRAP: recu signal EXIT\"; }" EXIT
 #trap "{ echo \"TRAP: nettoyage du fichier tempoaire d écriture: $TEMP\"; rm -f $TEMP; exit 255; }" SIGINT SIGTERM SIGCHLD EXIT
@@ -15,7 +19,7 @@ trap "{ if [ \"$FUNCNAME\" != \"\" ]; then echo \"DEBUG: TRAP: SORTIE DE fonctio
 function usage()
 {
 if [ "$CALLER" = "journal" ]; then
-	echo "ERR: $FUNCNAME: USAGE: $CALLER [-T(est seul)] -u(til) nomutil 	-n(nummcompte) -N(omcompte) -s(ensope)D|C -m(ontantope) -l(ibelleope)"
+	echo "ERR: $FUNCNAME: USAGE: $CALLER [-T(est seul)] [-d date] -u(til) nomutil 	-n(nummcompte) -N(omcompte) -s(ensope)D|C -m(ontantope) -l(ibelleope)"
 elif [ "$CALLER" = "depart" ]; then
 	echo "ERR: $FUNCNAME: USAGE: creation compte: $CALLER [-T(est seul)] -u(tilisateur) <nom util> -d|--depart <val depart>"
 
@@ -662,10 +666,10 @@ if [ "$C" != "$D" ];
 then 
 	echo "INFO: $FUNCNAME: credits et débits diffèrent, il y a une erreur"
 	printsumsDC ${FICHIERDEST} 
-
+	exit $ECHECBAL
 else
 	echo "INFO: $FUNCNAME: credits et debits identiques, les comptes sont équilibrés"
-
+	exit $SUCCES
 fi
 
 }
