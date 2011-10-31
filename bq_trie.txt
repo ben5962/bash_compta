@@ -1,4 +1,4 @@
-INFO : ./trier.sh lancé avec 1 arguments
+date:util:numcompte:nomcompte:sensope:montantope:libope
  2011-06-27:co:512:Banque:C:1.1:CB sabot magasinACHAT CB CARREFOUR LOMM 25.06.11
  2011-06-27:co:512:Banque:C:1.51:CB sabot magasinACHAT CB SUPERMARCHE MA 23.06.11
  2011-07-04:co:512:Banque:C:1.42:CB sabot magasinACHAT CB AUCHAN ENGLOS  02.07.11

@@ -60,17 +60,25 @@ F_BQ="$2"
 ########################################
 
 # une fonc pour choper les num de comptes
-function getnumcompte(){
+function getallnumcomptes(){
 # lignes non vides | 3eme champ
 USAGE="$FUNCNAME <fichier_compta>"
-[ $# -ne 1 ] && echo "ERR: $FUNCNAME a recu $# parm necess 1 param: $USAGE" && exit $ERR_NB_PARAM
+[ $# -ge 2 ] && echo "ERR: $FUNCNAME a recu $# parm necess 1 param: $USAGE" && exit $ERR_NB_PARAM
+if [ $# -eq 1 ]; then
 FICHIER="$1"
 # supprimer premiere ligne
 cat "$FICHIER" |\
        	sed '1 s/^.*$//'|\
        	gawk 'NF' |\
        # afficher que le parm3 \
-       gawk -F: '{print $3}' 
+       gawk -F: '{print $3}'
+else
+# 0 param. on suppose que ca vient d un pipe.
+       	sed '1 s/^.*$//'|\
+       	gawk 'NF' |\
+       # afficher que le parm3 \
+       gawk -F: '{print $3}'
+fi
 }
 # si les num de comptes diff de 512 on sort 
 
@@ -83,8 +91,8 @@ FICHIER="$1"
 while read F 
 do
     [ "$F" != "512" ] && echo "ERR: $FUNCNAME: sur fichier $FICHIER ligne $F differe de 512" && exit $ERR_PAS_512
-done  <   <(getnumcompte "$FICHIER")
-# was : done <     <(getnumcompte <$FICHIER) avec aucune verif du nb param de getnumcomptes. là si. 
+done  <   <(getallnumcomptes "$FICHIER")
+# was : done <     <(getallnumcomptes <$FICHIER) avec aucune verif du nb param de getallnumcomptes. là si. 
 }
 
 
@@ -172,8 +180,8 @@ gawk 'NF' | gawk -F: '{print $6}'
 fi
 }
 
- obtenir un fichier contenant uniquement les champs d un utilisateur
-function getlinesfromuser(){
+# obtenir un fichier contenant uniquement les champs d un utilisateur
+function filtre_getlinesfromuser(){
 UTIL="$1"
 gawk -v util="$UTIL" -F: "\$2 == util"
 }

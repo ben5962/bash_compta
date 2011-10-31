@@ -1,23 +1,76 @@
 #!/bin/bash
 . ./rapprochement_bancaire.sh
 
+####################
+# utilitaire
+#####################
+function debecho(){
+if [ ! -z "$DEBUG" ]; then
+	echo "$1" 1>&2
+fi
+}
+DEBUG="1"
 
-TEST="1"
-# proof of concept
-if [ "$TEST" == "1" ];
-then
+function test_getallnumcomptes(){
+debecho "entree dans $FUNCNAME"	
 	echo "essai de la fonction de récup des comptes sur compta.txt"
 	# TODO: pb premiere ligne pas compte
-	getnumcompte compta.txt |tr '\n' ' '
+	function getallnumcompte_withfilename(){
+	TEST_VIDE_SI_alnum="$(getallnumcomptes $1 |tr '\n' ' ' |(LANG=C grep -v -E [[:alnum:]]))"
+#	debecho "test_vide_si_alnum vaut : ${TEST_VIDE_SI_alnum}"
+	if [ "x${TEST_VIDE_SI_alnum}" == "x" ]; 
+	then 
+			echo "[OK]"; 
+		else 
+			echo "[KO]" ;
+	fi
+	}
+getallnumcompte_withfilename "compta.txt"
 echo " "
 echo "essai de la fonction de récup des comptes sur bq.txt"
-#getnumcompte <$F_BQ
-	getnumcompte bq_trie.txt |tr '\n' ' '
+#getallnumcomptes <$F_BQ
+getallnumcompte_withfilename "bq_trie.txt"
 echo " "
-fi
+#echo "essai de cette fonction en pas a pas pour comprendre"
+#getallnumcomptes "bq_trie.txt" |grep -v -E [[:alnum:]]
 
-if [ "$TEST" == "1" ];
-then
+echo " "
+echo "essai avec un pipe sans filename en param"
+
+function getallnumcompte_withoutfilename(){
+TEST_VIDE_SI_alnum=$(getallnumcomptes | tr '\n' ' ' |grep -v -E [[:alnum:]])
+	if [ "x${TEST_VIDE_SI_alnum}" == "x" ]; 
+	then 
+			echo "[OK]"; 
+		else 
+			echo "[KO]" ;
+	fi
+
+
+}
+getallnumcompte_withoutfilename  <compta.txt
+echo " "
+echo "essai avec un heredoc"
+getallnumcompte_withoutfilename <<findefichier
+date:util:numcompte:nomcompte:sensope:montantope:libope
+2011-09-05:co:512:"Banque":D:15138.55:"ouverture compte"
+2011-09-05:co:101:"Capital social":C:15138.55:"ouverture compte"
+2011-09-05:pu:512:"Banque":D:860.14:"ouverture compte"
+2011-09-05:pu:101:"Capital social":C:860.14:"ouverture compte"
+2011-09-05:co:6257:"frais restauration":D:55.71:"courses alimentaires"
+findefichier
+
+}
+
+
+
+
+
+
+
+
+
+function test_errsipasbq(){
 F_CPTA="compta.txt"
 F_BQ="bq_trie_sans_prem_ligne.txt"
 # FAIL VOLONTAIRE OK
@@ -32,6 +85,7 @@ F_BQ="bq_trie_sans_prem_ligne.txt"
 #err_sinumcompte_pasbq <$F_CPTA
 err_sinumcompte_pasbq $F_BQ
 echo "fin du test de non-sortie. toujours là? oui? on continue!"
+
 ## verif que bon champ
 echo "verif du bon fonctionnement de getmontantope"
 echo " le test reussit si cela affiche des chiffres"
@@ -39,9 +93,8 @@ cat $F_CPTA |sed '1 s/.*$//' |getmontantope |tr '\n' ' '
 echo " "
 # ok
 #ok
-fi
 
-
+}
 
 if [ "$TEST" == "1" ]; then 
 	echo "essai de modifdate.awk transforme en fonction"
@@ -52,14 +105,14 @@ fi
 
 if [ "$TEST" == "1" ]
 then
-	echo "TEST lancement de cat compta.txt| getlinesfromuser co"
+	echo "TEST lancement de cat compta.txt| filtre_getlinesfromuser co"
 	echo "pour verifier que les lignes affichees ne contiennent que l util co"
 	echo "le test est RATE si des champs s affichent"
 
-cat compta.txt |getlinesfromuser "co" |grep -v "co"
+cat compta.txt |filtre_getlinesfromuser "co" |grep -v "co"
         echo "meme test mais en comptant les lignes contenant co"
 	echo "le test est RATE si le resultat est nul"
-cat compta.txt |getlinesfromuser "co" |wc -l
+cat compta.txt |filtre_getlinesfromuser "co" |wc -l
 fi
 # okay
 
@@ -88,4 +141,8 @@ then
 	echo " "
 fi
 # ok
-
+function TEST(){
+test_getallnumcomptes
+test_errsipasbq
+}
+TEST

@@ -1,0 +1,1 @@
+./rapprochement_bancaire.sh: line 106: ofxdump : commande introuvable
