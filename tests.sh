@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o nounset
 . ./rapprochement_bancaire.sh
 ######################
 # constantes
@@ -6,6 +7,8 @@
 TEST_OK=0
 TEST_KO=0
 TOT_TEST=0
+SUCCES=0
+PROG_PAS_INSTALLE=150
 ####################
 # utilitaire
 #####################
@@ -14,6 +17,7 @@ if [ ! -z "$DEBUG" ]; then
 	echo "$1" 1>&2
 fi
 }
+
 
 
 function affiche_test(){
@@ -25,6 +29,27 @@ else
 fi
 }
 DEBUG="1"
+
+
+
+function verifie_existence_binaires(){
+resultat="$(which $1)"
+err="$?"
+cmdepasinstallee="1"
+if [ "$err" == "$SUCCES" ];
+then
+	echo "$1 existe"
+
+else
+	if [ "$err" == "$cmdepasinstallee" ];
+	then
+		echo "$resultat"
+		echo "$1 pas installe";
+		echo "je vais maintenant sortir avec une val d erreur $PROG_PAS_INSTALLE"
+		exit $PROG_PAS_INSTALLE	
+	fi
+fi
+}
 
 function test_getallnumcomptes(){
 debecho "entree dans $FUNCNAME"	
@@ -129,16 +154,17 @@ echo " "
 
 function test_modifdate(){
 debecho "entree dans $FUNCNAME"
-if [ "$TEST" == "1" ]; then 
 	echo "essai de modifdate.awk transforme en fonction"
 	echo "tous les champs <Date posted> sont censés avoir leur date transformée selon rfc-3339=date"
 	echo "si date reconnait la date alors c est bon"
+	modifdateawk
 	modifdateawk |grep "Date posted" | sed 's/ //g' | gawk -F'|' '{print $2;}' | tr '\n' ' ' |xargs -d " " -i -t date -d {}
-fi
+	#| grep -v -E [[:digit:]]{4]-[[:digit:]]{2}-)"
+echo "resultat de test_modifdate: $RESULTAT"
 }
-if [ "$TEST" == "1" ]
-then
-	echo "TEST lancement de cat compta.txt| filtre_getlinesfromuser co"
+
+function test_getlinesfromuser(){
+echo "TEST lancement de cat compta.txt| filtre_getlinesfromuser co"
 	echo "pour verifier que les lignes affichees ne contiennent que l util co"
 	echo "le test est RATE si des champs s affichent"
 
@@ -146,22 +172,16 @@ cat compta.txt |filtre_getlinesfromuser "co" |grep -v "co"
         echo "meme test mais en comptant les lignes contenant co"
 	echo "le test est RATE si le resultat est nul"
 cat compta.txt |filtre_getlinesfromuser "co" |wc -l
-fi
 # okay
-
+}
 # tests sur triparmontant
 # 1. verif de la sortie avec usage
 # en cas d'absence de param
-if [ "${TESTERR}" == "1" ];
-then
-echo "TESTERR vaut ${TESTERR}"
+function test_triparmontant(){
 echo "TESTERR: triparmontant lancé sans param pour tester msg err manque param"
 triparmontant 
-fi
 # ok
 # 2. lancement avec un fichier et verif de la sortie par ordre croissant en utilisant sort.
-if [ "$TEST"=="1" ];
-then
 	echo "TEST: triparmontant lancé avec un fichier compta.txt pour vérif tri par montant croissant"
 	echo "le test fonctionne si le resultat est une suite croissante"
 	triparmontant compta.txt | getmontantope |(LANG=C sort --check --numeric-sort)
@@ -172,9 +192,13 @@ then
 	getmontantope compta.txt |(LANG=C sort --check --numeric-sort )
 	echo "résultat : $?"
 	echo " "
-fi
+}
 # ok
 function TEST(){
+verifie_existence_binaires "grep"
+verifie_existence_binaires "sed"
+verifie_existence_binaires "gawk"
+verifie_existence_binaires "ofxdump"
 test_getallnumcomptes
 test_errsipasbq
 test_getmontantope
