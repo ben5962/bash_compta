@@ -1,6 +1,11 @@
 #!/bin/bash
 . ./rapprochement_bancaire.sh
-
+######################
+# constantes
+####################
+TEST_OK=0
+TEST_KO=0
+TOT_TEST=0
 ####################
 # utilitaire
 #####################
@@ -9,22 +14,29 @@ if [ ! -z "$DEBUG" ]; then
 	echo "$1" 1>&2
 fi
 }
+
+
+function affiche_test(){
+if [ "$1" == "$2" ];
+then
+	echo "[OK]";
+else 
+	echo "[KO]";
+fi
+}
 DEBUG="1"
 
 function test_getallnumcomptes(){
 debecho "entree dans $FUNCNAME"	
-	echo "essai de la fonction de récup des comptes sur compta.txt"
+	
+echo "essai de la fonction de récup des comptes sur compta.txt"
 	# TODO: pb premiere ligne pas compte
 	function getallnumcompte_withfilename(){
 	TEST_VIDE_SI_alnum="$(getallnumcomptes $1 |tr '\n' ' ' |(LANG=C grep -v -E [[:alnum:]]))"
 #	debecho "test_vide_si_alnum vaut : ${TEST_VIDE_SI_alnum}"
-	if [ "x${TEST_VIDE_SI_alnum}" == "x" ]; 
-	then 
-			echo "[OK]"; 
-		else 
-			echo "[KO]" ;
-	fi
-	}
+	affiche_test "x${TEST_VIDE_SI_alnum}" "x" 
+		}
+
 getallnumcompte_withfilename "compta.txt"
 echo " "
 echo "essai de la fonction de récup des comptes sur bq.txt"
@@ -39,13 +51,7 @@ echo "essai avec un pipe sans filename en param"
 
 function getallnumcompte_withoutfilename(){
 TEST_VIDE_SI_alnum=$(getallnumcomptes | tr '\n' ' ' |grep -v -E [[:alnum:]])
-	if [ "x${TEST_VIDE_SI_alnum}" == "x" ]; 
-	then 
-			echo "[OK]"; 
-		else 
-			echo "[KO]" ;
-	fi
-
+	affiche_test "x${TEST_VIDE_SI_alnum}" "x" 
 
 }
 getallnumcompte_withoutfilename  <compta.txt
@@ -73,36 +79,63 @@ findefichier
 function test_errsipasbq(){
 F_CPTA="compta.txt"
 F_BQ="bq_trie_sans_prem_ligne.txt"
-# FAIL VOLONTAIRE OK
-#echo "test des err pas512"
-#err_sinumcompte_pasbq "compta.txt"
+	function fail_cptpasbq(){
+	#FAIL VOLONTAIRE OK
+	echo " "
+	echo " "
+	echo " "
+	echo "test des err pas512"
+	echo "essai de err_sipas512 sur le fichier compta qui comporte d autres numcomptes"
+	echo "le test réussit si la sortie de la commande vaut 200"
+	RESULTAT="$(err_sinumcompte_pasbq "compta.txt")"; ERR="$?"
+	affiche_test "${ERR}" "200"
+	}
 
-#FAIL VOLONTAIRE OK
-#echo "test de fichier pas existant"
-#err_sinumcompte_pasbq "sqmfldqjkfjsld"
+	function fail_aintfile(){
+	#FAIL VOLONTAIRE OK
+	echo "test de fichier pas existant"
+	RESULTAT="$(err_sinumcompte_pasbq "sqmfldqjkfjsld")"; ERR="$?";
+	affiche_test "${ERR}" "${ERR_FICHIER_EXISTEPAS}"
+	}	
 
+
+	function succes_onlybq(){
 	echo "test de non-sortie sur des valeurs correctes de fichier compta |512"
-#err_sinumcompte_pasbq <$F_CPTA
-err_sinumcompte_pasbq $F_BQ
-echo "fin du test de non-sortie. toujours là? oui? on continue!"
+	echo "le test réussit si la valeur de sortie est 0"
+	#err_sinumcompte_pasbq <$F_CPTA
+	RESULTAT="$(err_sinumcompte_pasbq "$F_BQ")"; ERR="$?"
+	affiche_test "${ERR}" "${SUCCES}"
+	echo "fin du test de non-sortie. toujours là? oui? on continue!"
+	}
+fail_cptpasbq
+fail_aintfile
+succes_onlybq
+}
 
+function test_getmontantope(){
 ## verif que bon champ
+echo " "
+echo " "
 echo "verif du bon fonctionnement de getmontantope"
 echo " le test reussit si cela affiche des chiffres"
-cat $F_CPTA |sed '1 s/.*$//' |getmontantope |tr '\n' ' '
+RESULTAT="$(cat $F_CPTA |sed '1 s/.*$//' |getmontantope |tr '\n' ' '| grep -v -E [[:digit:].])"
+affiche_test "x${RESULTAT}" "x"
 echo " "
 # ok
 #ok
 
+
 }
 
+function test_modifdate(){
+debecho "entree dans $FUNCNAME"
 if [ "$TEST" == "1" ]; then 
 	echo "essai de modifdate.awk transforme en fonction"
 	echo "tous les champs <Date posted> sont censés avoir leur date transformée selon rfc-3339=date"
 	echo "si date reconnait la date alors c est bon"
 	modifdateawk |grep "Date posted" | sed 's/ //g' | gawk -F'|' '{print $2;}' | tr '\n' ' ' |xargs -d " " -i -t date -d {}
 fi
-
+}
 if [ "$TEST" == "1" ]
 then
 	echo "TEST lancement de cat compta.txt| filtre_getlinesfromuser co"
@@ -144,5 +177,7 @@ fi
 function TEST(){
 test_getallnumcomptes
 test_errsipasbq
+test_getmontantope
+test_modifdate
 }
 TEST

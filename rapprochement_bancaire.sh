@@ -3,6 +3,7 @@
 ERR_NB_PARAM=65
 ERR_FICHIER_EXISTEPAS=100
 ERR_PAS_512=200
+SUCCES="0"
 # les valeurs qu'on peut passer à 1
 # avant d invoquer rapprochement_bancaire:
 # DEBUG
@@ -87,12 +88,13 @@ function err_sinumcompte_pasbq(){
 USAGE="$FUNCNAME <fich_cpta|512>"
 [ $# -ne 1 ] && echo "ERR: $FUNCNAME a recu $# parm necess 1 param: $USAGE" && exit $ERR_NB_PARAM
 FICHIER="$1"
-[ ! -e "$FICHIER" ] && echo "ERR: $FUNCNAME: fichier $FICHIER existe pas " && exit $ERR_FICHIER_EXISTEPAS
+[ ! -e "$FICHIER" ] && echo "ERR: $FUNCNAME: fichier $FICHIER existe pas " && return $ERR_FICHIER_EXISTEPAS
 while read F 
 do
-    [ "$F" != "512" ] && echo "ERR: $FUNCNAME: sur fichier $FICHIER ligne $F differe de 512" && exit $ERR_PAS_512
+    [ "$F" != "512" ] && echo "ERR: $FUNCNAME: sur fichier $FICHIER ligne $F differe de 512" && return $ERR_PAS_512
 done  <   <(getallnumcomptes "$FICHIER")
 # was : done <     <(getallnumcomptes <$FICHIER) avec aucune verif du nb param de getallnumcomptes. là si. 
+return $SUCCES
 }
 
 
