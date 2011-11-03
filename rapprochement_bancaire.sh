@@ -84,6 +84,29 @@ fi
 # si les num de comptes diff de 512 on sort 
 
 
+function getallusers(){
+# lignes non vides | 2eme champ
+USAGE="$FUNCNAME <fichier_compta>"
+[ $# -ge 2 ] && echo "ERR: $FUNCNAME a recu $# parm necess 1 param: $USAGE" && exit $ERR_NB_PARAM
+if [ $# -eq 1 ]; then
+FICHIER="$1"
+# supprimer premiere ligne
+cat "$FICHIER" |\
+       	sed '1 s/^.*$//'|\
+       	gawk 'NF' |\
+       # afficher que le parm3 \
+       gawk -F: '{print $2}'
+else
+# 0 param. on suppose que ca vient d un pipe.
+       	sed '1 s/^.*$//'|\
+       	gawk 'NF' |\
+       # afficher que le parm3 \
+       gawk -F: '{print $2}'
+fi
+}
+
+
+
 function err_sinumcompte_pasbq(){
 USAGE="$FUNCNAME <fich_cpta|512>"
 [ $# -ne 1 ] && echo "ERR: $FUNCNAME a recu $# parm necess 1 param: $USAGE" && exit $ERR_NB_PARAM
