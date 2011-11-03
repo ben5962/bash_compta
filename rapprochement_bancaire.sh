@@ -3,6 +3,7 @@
 ERR_NB_PARAM=65
 ERR_FICHIER_EXISTEPAS=100
 ERR_PAS_512=200
+ERR_PAS_OFX=201
 SUCCES="0"
 # les valeurs qu'on peut passer à 1
 # avant d invoquer rapprochement_bancaire:
@@ -29,6 +30,18 @@ then
 fi
 }
 
+
+function unetunseul(){
+if [ "$DEBUG"=="1" ]; then echo "DEBUG : $FONCTION lancé avec $# arguments"; fi
+if [ ! "$#" -eq 1 ];
+then 
+    echo "ERR: il faut un arg et un seul pour $FONCTION"
+    echo "ERR: je vais afficher le message dutilsation de la fonction"
+    usage
+    echo "ERR: je vais sortir avec un msg d erreur de $ERR_NB_PARAM"
+    exit $ERR_NB_PARAM
+fi
+}
 
 #################################
 # 1 VERIF DES ENTREES UTILISATEUR
@@ -134,6 +147,26 @@ return $SUCCES
 # produire un fichier bq.txt | (forcément monoutil) trié par ordre csst montant opé
 ###############################################################
 # ./modifdate.awk |sed -n -f en_ligne.sed | ./danslordre.awk
+# ofx_to_encol <fichier.ofx> | modifdate | encol_daterfc3339_to_enligne_precompta
+
+function ofx_to_encol(){
+FONCTION="$FUNCNAME"
+function usage(){
+echo "$FONCTION <fichier.ofx> -> fichier encol"
+
+}
+# on desactive:
+# msg d'interpretation des fichiers --msg_parser off par défaut rien à faire
+# msg de déboggage --msg_debut off par défaut rien à faire
+# msg de statut ?? --msg_status on par défaut on s'en fout on le passe en param => --msg_status
+# msg d'info progression --msg_info pareil on s'en fout on le passe en para => --msg_status --msg_info
+# msg d'avertissement consturcitons inconnues --msg_warning on s'en fout donc param => --msg_status --msg_info --msg_warning
+# on garde :
+# msg d'erreur qu on envoie dans ofx.err --msg_err on par défaut rien à faire => --msg_status --msg_info --msg_warning 2> err
+unetunseul "$@"
+ofxdump "$1" --msg_warning  --msg_status --msg_info 2> ofx.err
+return ${SUCCES}
+}
 
 function modifdateawk(){
 ofxdump todo.ofx 2>OFXDUMP_ERR.TXT |\
@@ -264,22 +297,21 @@ p
 ###################################################################
 # bah. 1 lister les soldes uniques 2 greper .. simple.
 # recuperer les montants
+
 function getmontantope(){
 # lignes non vides | 6eme champ
-USAGE="$FUNCNAME <fich_cpta>"
-if [ "$DEBUG" == "1" ];
-then
-[ $# -ne 1 ] && echo "ERR: $FUNCNAME a recu $# parm necess 1 param: $USAGE" && exit $ERR_NB_PARAM
-fi
-if [ $# -eq 1 ];
-then	
+FONCTION=${FUNCNAME}
+
+function usage(){
+echo "USAGE: $FONCTION <fich_cpta> TODO: version -p(ipe)| --f(fichier) <fichiercompta>"
+}
+
+unetunseul "$@"
+
 FICHIER="$1"
 [ ! -e "$FICHIER" ] && echo "ERR: $FUNCNAME: fichier $FICHIER existe pas " && exit $ERR_FICHIER_EXISTEPAS
 gawk 'NF' "$FICHIER" | gawk -F: '{print $6}' 
-else
-	#soyons tolérant envers les pipes
-gawk 'NF' | gawk -F: '{print $6}'
-fi
+# ai viré l histoire de la tolérance envers les pipes
 }
 
 # obtenir un fichier contenant uniquement les champs d un utilisateur
