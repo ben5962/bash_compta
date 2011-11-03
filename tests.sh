@@ -196,7 +196,23 @@ DEUXIEME="$(cat compta.txt |getallusers |grep --only-matching -E 'co|pu' |wc -l)
 echo "$FUNCNAME : les val de champs sont soit co soit pu $(affiche_test $PREMIER $DEUXIEME)"
 }
 
+function test_sedenligne(){
+# verifier que pour une entree de type ofxdump
+# (format à préciser)
 
+# on sort un format du type
+# transaction@date@montant@libellé
+
+# methode:
+# fonctiondetest << limitedeheredoc
+#  ligne d input
+# autreligne d input
+# fin de heredoc
+# telle que l ouput soit une ligne unique.
+# tester chaque cas attendu
+echo "$FUNCNAME : TODO"
+
+}
 function TEST(){
 echo "grep doit exister $(verifie_existence_binaires grep)"
 echo "sed doit exister $(verifie_existence_binaires sed)"
@@ -209,5 +225,6 @@ test_modifdate
 test_getlinesfromuser
 test_getallusers
 test_triparmontant
+test_sedenligne
 }
 TEST
