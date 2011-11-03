@@ -173,3 +173,7 @@ date:util:numcompte:nomcompte:sensope:montantope:libope
 2011-10-10:pu:512:"Banque":C:695:"loyer octobre 2011"
 2011-10-10:pu:401IOUCP:"IOU - Co doit à puce - loyer":D:350:"IOU - Co doit à puce - créance cpte puce"
 2011-10-10:pu:791FRE:"Transfert de charge - partage loyer - octobre2011":C:350:"transfert de charge - partage loyer"
+2011-11-03:pu:6132:"Locations immobilières - appartement":D:695:"loyer novembre 2011"
+2011-11-03:pu:512:"Banque":C:695:"loyer novembre 2011"
+2011-11-03:pu:401IOUCP:"IOU - Co doit à puce - loyer":D:350:"IOU -Co doit à puce - créance cpte puce pour loyer novembre 2011"
+2011-11-03:pu:791FRE:"Tranfert de charge - partage loyer - novembre 2011":C:350:"transfert de charge pu vers co - partage loyer novembre 2011"
