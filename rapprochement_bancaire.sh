@@ -175,7 +175,7 @@ ofxdump todo.ofx 2>OFXDUMP_ERR.TXT |\
 	};'
 }
 
-function sedenligne(){
+function encol_daterfc3339_to_enligne_precompta(){
 sed  -n '
 /ofx_proc_transaction.*/ {
 # sauter la ligne ofx_proc.la supprimer du tampon. charger la ligne suivante qui expose le numero de compte 

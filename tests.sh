@@ -196,11 +196,134 @@ DEUXIEME="$(cat compta.txt |getallusers |grep --only-matching -E 'co|pu' |wc -l)
 echo "$FUNCNAME : les val de champs sont soit co soit pu $(affiche_test $PREMIER $DEUXIEME)"
 }
 
-function test_sedenligne(){
-# verifier que pour une entree de type ofxdump
+function test_encol_daterfc3339_to_enligne_precompta(){
+FONCTION="${FUNCNAME}"
+# fichier ofx --- ofxdump() --> fichier en colonnes --- modifdate awk() --> fichier en colonnes+ dates rfc-3339
+# verifier que pour une entree de type fichier en colonnes +dates rfc-3339
 # (format à préciser)
+#  
+# 1. les entetes 
+# de 4 type. un seul type nous intéresse: ofx_prox_transaction
+#ofx_proc_account():
+#ofx_proc_statement():
+#ofx_proc_status():
+#ofx_proc_transaction():
+	function test_nombre_lignes_produites(){
+	BUTTEST="$FUNCNAME produit une ligne par transaction du fichier colonne"
+	# cela nécessite la production d un fichier en colonnes +dates
+	#	 
 
-# on sort un format du type
+		function  wc_encol_daterfc3339_to_enligne_precompta_deuxlignes(){
+encol_daterfc3339_to_enligne_precompta << inputvasuivre |wc -l 
+ofx_proc_status():
+Ofx entity this status is relevent to|SONRS 
+Severity|INFO
+Code|0, name: Success
+Description|The server successfully processed the request.
+
+ofx_proc_status():
+Ofx entity this status is relevent to|STMTTRNRS 
+Severity|INFO
+Code|0, name: Success
+Description|The server successfully processed the request.
+
+ofx_proc_account():
+Account ID|20041 01005 1081437V026
+Account name|Bank account 1081437V026
+Account type|CHECKING
+Currency|EUR
+Bank ID|20041
+Branch ID|01005
+Account #|1081437V026
+
+ofx_proc_statement():
+Currency|EUR
+Account ID|20041 01005 1081437V026
+Start date of this statement|Tue Jun 14 12:59:00 2011 CEST
+End date of this statement|Fri Oct 14 11:59:00 2011 CEST
+Ledger balance|14641.64
+Available balance|14641.64
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|PAYMENT: Electronic payment
+Date posted| 2011-10-10
+Total money amount|-32.00
+# of units|32.00
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUY6LLLO
+Name of payee or transaction description|PRELEVEMENT DE BOUYGUES TELECO
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|PAYMENT: Electronic payment
+Date posted| 2011-10-10
+Total money amount|-29.90
+# of units|29.90
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUY6LGYF
+Name of payee or transaction description|PRELEVEMENT DE SA NORDNET
+inputvasuivre
+		} # fin wc_encol_daterfc3339_to_enligne_precompta_deuxlignes, tjs ds nombre_de_lignes
+
+
+		function wc_grep_deuxlignes(){
+grep 'ofx_proc_transaction()' << inputvasuivre |wc -l 
+ofx_proc_status():
+Ofx entity this status is relevent to|SONRS 
+Severity|INFO
+Code|0, name: Success
+Description|The server successfully processed the request.
+
+ofx_proc_status():
+Ofx entity this status is relevent to|STMTTRNRS 
+Severity|INFO
+Code|0, name: Success
+Description|The server successfully processed the request.
+
+ofx_proc_account():
+Account ID|20041 01005 1081437V026
+Account name|Bank account 1081437V026
+Account type|CHECKING
+Currency|EUR
+Bank ID|20041
+Branch ID|01005
+Account #|1081437V026
+
+ofx_proc_statement():
+Currency|EUR
+Account ID|20041 01005 1081437V026
+Start date of this statement|Tue Jun 14 12:59:00 2011 CEST
+End date of this statement|Fri Oct 14 11:59:00 2011 CEST
+Ledger balance|14641.64
+Available balance|14641.64
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|PAYMENT: Electronic payment
+Date posted| 2011-10-10
+Total money amount|-32.00
+# of units|32.00
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUY6LLLO
+Name of payee or transaction description|PRELEVEMENT DE BOUYGUES TELECO
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|PAYMENT: Electronic payment
+Date posted| 2011-10-10
+Total money amount|-29.90
+# of units|29.90
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUY6LGYF
+Name of payee or transaction description|PRELEVEMENT DE SA NORDNET
+inputvasuivre
+
+		} #  fin de wc_grep_deuxlignes, tjs dans nombre de lignes
+		echo "$FONCTION ${BUTTEST} $(affiche_test $(wc_encol_daterfc3339_to_enligne_precompta_deuxlignes) $(wc_grep_deuxlignes))"
+} # fin de nombre de lignes
+# on sort un format du type precompta.txt 
+# c a d en ligne tq: 
 # transaction@date@montant@libellé
 
 # methode:
@@ -210,9 +333,17 @@ function test_sedenligne(){
 # fin de heredoc
 # telle que l ouput soit une ligne unique.
 # tester chaque cas attendu
-echo "$FUNCNAME : TODO"
+
+# appels des fonctions produisant les résultats: les phrases devraient se trouver ici
+test_nombre_lignes_produites
+}
+
+
+function test_getofxdump(){
+
 
 }
+
 function TEST(){
 echo "grep doit exister $(verifie_existence_binaires grep)"
 echo "sed doit exister $(verifie_existence_binaires sed)"
@@ -221,10 +352,10 @@ echo "ofxdump doit exister $(verifie_existence_binaires ofxdump)"
 test_getallnumcomptes
 test_errsipasbq
 test_getmontantope
-test_modifdate
-test_getlinesfromuser
-test_getallusers
-test_triparmontant
-test_sedenligne
+#test_modifdate
+#test_getlinesfromuser
+#test_getallusers
+#test_triparmontant
+test_encol_daterfc3339_to_enligne_precompta
 }
 TEST
