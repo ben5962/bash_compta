@@ -301,17 +301,46 @@ p
 function getmontantope(){
 # lignes non vides | 6eme champ
 FONCTION=${FUNCNAME}
+	# la fonction doit indiquer son mode d emploi
+	function usage(){
+	echo "USAGE: $FONCTION <fich_cpta> TODO: version -p(ipe)| --f(fichier) <fichiercompta>"
+	}
 
-function usage(){
-echo "USAGE: $FONCTION <fich_cpta> TODO: version -p(ipe)| --f(fichier) <fichiercompta>"
-}
+	# la fonction ne doit accepter qu un nombre correct de parametres
+	unetunseul "$@"
 
-unetunseul "$@"
+	# la fonction doit pouvoir etre appelee avec param à la getmontantope <fichiercompta>
+	function sanspipe(){
+	FICHIER="$1"
+	[ ! -e "$FICHIER" ] && echo "ERR: $FUNCNAME: fichier $FICHIER existe pas " && exit $ERR_FICHIER_EXISTEPAS
+	gawk 'NF' "$FICHIER" | gawk -F: '{print $6}' 
+	}
+	function avecpipe(){
+	# pour que ca marche avec un pipe il suffit d omettre le param du premier gawk
+	# de gawk <transformation> <fichier>
+	# on écrit gawk <transformation> rien
+	gawk 'NF' |gawk -F: '{print $6}'
+	}
 
-FICHIER="$1"
-[ ! -e "$FICHIER" ] && echo "ERR: $FUNCNAME: fichier $FICHIER existe pas " && exit $ERR_FICHIER_EXISTEPAS
-gawk 'NF' "$FICHIER" | gawk -F: '{print $6}' 
-# ai viré l histoire de la tolérance envers les pipes
+	# la fonction doit pouvoir etre appelée avec appel à un pipe: cat <fichiercompta> |getmontantope
+	# ou							      getmontantope <fichiercompta
+# appels de fonction
+sanspipe "$@"
+# gestion des params pour arbitrer les appels
+function interface(){
+while getopts ":p:f:" arg 
+do
+	case $arg in
+		f) FICHIER="${OPTARG}"; sanspipe "$FICHIER" ;;
+		p) avecpipe ;;
+		*) echo "ERR parse des parms de ${FUNCNAME} : param ${OPTARG} pas implémenté";
+			usage "${USAGE}";; #balancer msg erreur usage par appel a usage
+		esac
+done
+shift $(( ${OPTIND} - 1 ))
+
+
+		} # fin de interface
 }
 
 # obtenir un fichier contenant uniquement les champs d un utilisateur
