@@ -18,8 +18,9 @@ SUCCES="0"
 function aumoinsun(){
 
 
-
-if [ "$DEBUG"=="1" ]; then echo "DEBUG : $FONCTION lancé avec $# arguments"; fi
+# fait échouer les fonctions attendant un certain nb de lignes
+# donc commenté
+#debecho "DEBUG : $FONCTION lancé avec $# arguments"; 
 if [ "$#" -lt 1 ];
 then 
     echo "ERR: il faut au moins un arg pour $FONCTION"
@@ -307,41 +308,53 @@ FONCTION=${FUNCNAME}
 	}
 
 	# la fonction ne doit accepter qu un nombre correct de parametres
-	unetunseul "$@"
+	aumoinsun "$@"
 
 	# la fonction doit pouvoir etre appelee avec param à la getmontantope <fichiercompta>
 	function sanspipe(){
 	FICHIER="$1"
 	[ ! -e "$FICHIER" ] && echo "ERR: $FUNCNAME: fichier $FICHIER existe pas " && exit $ERR_FICHIER_EXISTEPAS
-	gawk 'NF' "$FICHIER" | gawk -F: '{print $6}' 
+	sed -n '2,$ p' "$FICHIER" | gawk -F: '{print $6}' 
 	}
+
+
+	# la fonction doit pouvoir etre appelée avec appel à un pipe: cat <fichiercompta> |getmontantope
+	# ou getmontantope <fichiercompta
+	
 	function avecpipe(){
 	# pour que ca marche avec un pipe il suffit d omettre le param du premier gawk
 	# de gawk <transformation> <fichier>
 	# on écrit gawk <transformation> rien
-	gawk 'NF' |gawk -F: '{print $6}'
+	sed -n '2,$ p' |gawk -F: '{print $6}'
 	}
 
-	# la fonction doit pouvoir etre appelée avec appel à un pipe: cat <fichiercompta> |getmontantope
-	# ou							      getmontantope <fichiercompta
-# appels de fonction
-sanspipe "$@"
 # gestion des params pour arbitrer les appels
 function interface(){
-while getopts ":p:f:" arg 
+#debecho "\$\@ vaut : $@"
+# p avec 0 argument donc p(rien)
+# f avec 1 argument donc f":"
+# traitement des erreurs donc ":" initial
+# resultat :   ":pf:"
+while getopts ":pf:" argu 
 do
-	case $arg in
+	case $argu in
 		f) FICHIER="${OPTARG}"; sanspipe "$FICHIER" ;;
 		p) avecpipe ;;
 		*) echo "ERR parse des parms de ${FUNCNAME} : param ${OPTARG} pas implémenté";
-			usage "${USAGE}";; #balancer msg erreur usage par appel a usage
+			usage ;; #balancer msg erreur usage par appel a usage
 		esac
 done
 shift $(( ${OPTIND} - 1 ))
 
 
 		} # fin de interface
-}
+
+	# appels de fonctions 
+	# sanspipe "$@"
+	interface "$@"
+
+} # fin de getmontantope
+
 
 # obtenir un fichier contenant uniquement les champs d un utilisateur
 function filtre_getlinesfromuser(){

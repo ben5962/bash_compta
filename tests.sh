@@ -9,7 +9,7 @@ TEST_KO="0"
 TOT_TEST="0"
 SUCCES="0"
 PROG_PAS_INSTALLE=150
-DEBUG="0"
+DEBUG=""
 ####################
 # utilitaire
 #####################
@@ -131,18 +131,72 @@ succes_onlybq
 function test_getmontantope(){
 ## verif que bon champ
 FONCTION="$FUNCNAME"
-	function quedeschiffres(){
-	F_CPTA="compta.txt"
-	RESULTAT="$(cat $F_CPTA |sed '1 s/.*$//' |getmontantope |tr '\n' ' '| grep --invert-match -E [[:digit:].])"
-	echo "$FONCTION doit ne renvoyer que des chiffres $(affiche_test "x${RESULTAT}" "x")"
-	}
-	function needusage(){
-	RESULTAT="$(getmontantope)"
-	echo -e "$FONCTION () -> usage $RESULTAT"
+# un fichier de type compta.txt qui jouera le role d'env de test
+function preload(){
+cat << limitedefichier > temp
+date:util:numcompte:nomcompte:sensope:montantope:libope
+2011-09-05:co:512:"Banque":D:15138.55:"ouverture compte"
+2011-09-05:co:101:"Capital social":C:15138.55:"ouverture compte"
+2011-09-05:pu:512:"Banque":D:860.14:"ouverture compte"
+2011-09-05:pu:101:"Capital social":C:860.14:"ouverture compte"
+limitedefichier
 }
-# lancement des tests
-quedeschiffres
-needusage
+
+function cleanup(){
+rm -f temp
+}
+
+function renvoie4lignes(){
+debecho "entree dans $FUNCNAME"
+F_CPTA="temp"
+cat $F_CPTA |\
+#	sed -n '2,$ p'|\
+	getmontantope -p |wc -l
+	
+}
+function comptenblignes(){
+debecho "entree dans $FUNCNAME"
+F_CPTA="temp"
+cat $F_CPTA |\
+	sed -n '2,$ p' |wc -l
+
+}
+
+renvoie4lignesparam(){
+F_CPTA="temp"
+	getmontantope -f "$F_CPTA" |wc -l
+# ce test prouve que le tronquage du fichier devrait se trouver dans getmontantope même:
+# sinon il fonctionne qu'avec des wrappers
+}
+function invertmatchok(){
+#echo doit renvoyer invert match fonctionne
+grep --invert-match -E "[[:digit:].]" <<limite
+123
+34.3
+invert match fonctionne
+limite
+
+}
+function quedeschiffres(){
+	F_CPTA="temp"
+
+	RESULTAT="$(cat $F_CPTA |sed '1 s/.*$//' |getmontantope -p | grep --invert-match -E [[:digit:].])"
+		
+	}
+	# lancement des tests
+
+preload
+echo -e "$FUNCNAME doit partir en message d'erreur si on ne lui fournit aucun param \n $(getmontantope)"
+#renvoie4lignes
+#comptenblignes
+#invertmatchok
+renvoie4lignesparam
+echo "besoin de vérifier la capacité de grep à pouvoir renvoyer les lignes ne matchant pas $(affiche_test "invert match fonctionne" "$(invertmatchok)")"
+echo "$FONCTION envoi via pipe. nombre de montants extraits : autant que de lignes de donnees $(affiche_test "$(comptenblignes)" "$(renvoie4lignes)")"
+echo "$FONCTION le champ selectionne est le bon s il ne comporte que des montants (chiffres et .) $(affiche_test "x$(quedeschiffres)" "x")"
+echo "$FONCTION envoi via param. nombre de montants extraits : autant que de lignes de donnees $(affiche_test "$(comptenblignes)" "$(renvoie4lignesparam)")"
+
+cleanup
 }
 
 function test_modifdate(){
@@ -486,7 +540,7 @@ test_getmontantope
 #test_getallusers
 #test_triparmontant
 #test_encol_daterfc3339_to_enligne_precompta
-#test_ofx_to_encol
-#test_unetunseul
+test_ofx_to_encol
+test_unetunseul
 }
 TEST
