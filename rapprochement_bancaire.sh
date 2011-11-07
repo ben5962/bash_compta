@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o nounset
 # rapprochement bancaire
 ERR_NB_PARAM=65
 ERR_FICHIER_EXISTEPAS=100
@@ -7,7 +8,7 @@ ERR_PAS_OFX=201
 SUCCES="0"
 # les valeurs qu'on peut passer à 1
 # avant d invoquer rapprochement_bancaire:
-# DEBUG
+DEBUG="1"
 # TESTERR pour tester que les fonctions sortent bien si param incorrects
 # TEST pour tester les fonctions en env normal
 
@@ -15,6 +16,13 @@ SUCCES="0"
 ###########################
 #   0 utilitaires
 ##############################
+function debecho(){
+if [ ! -z "$DEBUG" ]; then
+	echo "$1" 1>&2
+fi
+}
+
+
 function aumoinsun(){
 
 
@@ -33,7 +41,7 @@ fi
 
 
 function unetunseul(){
-if [ "$DEBUG"=="1" ]; then echo "DEBUG : $FONCTION lancé avec $# arguments"; fi
+debecho "DEBUG : $FONCTION lancé avec $# arguments"; 
 if [ ! "$#" -eq 1 ];
 then 
     echo "ERR: il faut un arg et un seul pour $FONCTION"
@@ -170,7 +178,30 @@ echo "$FONCTION <fichier.ofx> -> fichier encol"
 # msg d'avertissement consturcitons inconnues --msg_warning on s'en fout donc param => --msg_status --msg_info --msg_warning
 # on garde :
 # msg d'erreur qu on envoie dans ofx.err --msg_err on par défaut rien à faire => --msg_status --msg_info --msg_warning 2> err
+
+# homeostasie
+#un seul param
 unetunseul "$@"
+# le param doit correspondre à un fichier existant
+if [ ! -e "$1" ]; then echo "le fichier $1 n'existe pas"; usage; exit $ERR_FICHIER_EXISTEPAS; fi
+function detect_ofx_type(){
+PREMIERE_LIGNE="$(head -n 1 "$@")"
+debecho "premiere ligne : $PREMIERE_LIGNE"
+CRITERE="OFXHEADER:100"
+if [ "${PREMIERE_LIGNE}" == "${CRITERE}" ];
+then
+	debecho "$1 est un fichier de type ofx"
+	return $SUCCES
+else
+
+	debecho "$1 n est pas un fichier de type ofx"
+	usage;
+	exit $ERR_PAS_OFX
+fi
+}
+detect_ofx_type "$1"
+
+# toujours là? c'est que tout est bon. appel de fonction.
 ofxdump "$1" --msg_warning  --msg_status --msg_info 2> ofx.err
 return ${SUCCES}
 }

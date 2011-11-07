@@ -9,7 +9,7 @@ TEST_KO="0"
 TOT_TEST="0"
 SUCCES="0"
 PROG_PAS_INSTALLE=150
-DEBUG=""
+DEBUG="1"
 ####################
 # utilitaire
 #####################
@@ -524,17 +524,22 @@ return ${ERR}
 ############################
 # APPELS DES FONCTIONS DE TEST
 ###############################
+: <<BLOCCOMMENTE
 debecho " l'appel suivant ne marche pas. ofxdump ne semble pas voir qu'on lui passe du contenu sous forme de pipe "
 debexec ofxdump_REFUSES_REDIRECTION_NEEDS_ARG_encol_for_diff
 debecho " pourtant la syntaxe est correcte . preuve :"
 debexec essai_de_heredoc
 debecho "conclusion : ofxdump semble vérifier la présence d un nom de fichier en argument."
 debecho "sera résolu plus tard. pour l instant construction fichier temporaire"
+BLOCCOMMENTE
+
 echo "$FUNCNAME 1. ofx->encol => ${SUCCES} $(RESULTAT=$(ofxdump_tempfile_for_diff); ERR=$?; affiche_test ${ERR} ${SUCCES})"
-echo "$FUNCNAME 2. ()->encol => noarg $ERR_NB_PARAM"
-echo "$FUNCNAME 3. (nomfichier pas existant ou pas un fichier)-> fichierexistepas $ERR_FICHIER_EXISTEPAS"
-echo "$FUNCNAME 3. (vide)->encol => noanofx $ERR_PAS_OFX"
-echo "$FUNCNAME 4. (nonvide pas ofx)->encol => noanofx $ERR_PAS_OFX"
+echo "$FUNCNAME 2. ()->encol => noarg $ERR_NB_PARAM $(RES=$(ofx_to_encol); ERR="$?"; affiche_test ${ERR} ${ERR_NB_PARAM})"
+echo -e "$FUNCNAME 3. (noafile)->encol 2> msg err? \n $(ofx_to_encol qsdfdsf) $(affiche_test ${SUCCES} ${SUCCES})"
+echo -e "$FUNCNAME 3bis (noafile)->encol va retour err $ERR_FICHIER_EXISTEPAS?; $(RES="$(ofx_to_encol qsdfdsf)"; ERR="$?"; affiche_test $ERR $ERR_FICHIER_EXISTEPAS;)"
+
+echo -e "$FUNCNAME 4. (non  vide pas ofx)->encol => noanofx $ERR_PAS_OFX \n $(ofx_to_encol "compta.txt")"
+echo "$FUNCNAME 5. (vide)->encol => noanofx $ERR_PAS_OFX"
 }
 
 function test_unetunseul(){
@@ -563,7 +568,7 @@ function TEST(){
 #test_getallusers
 #test_triparmontant
 #test_encol_daterfc3339_to_enligne_precompta
-#test_ofx_to_encol
+test_ofx_to_encol
 #test_unetunseul
 }
 TEST
