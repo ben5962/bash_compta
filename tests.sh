@@ -56,7 +56,25 @@ fi
 
 function test_getallnumcomptes(){
 debecho "entree dans $FUNCNAME"	
-	
+
+
+#################
+# utilitaires
+#################
+	function preload(){
+cat << limitedefichier > temp
+date:util:numcompte:nomcompte:sensope:montantope:libope
+2011-09-05:co:512:"Banque":D:15138.55:"ouverture compte"
+2011-09-05:co:101:"Capital social":C:15138.55:"ouverture compte"
+2011-09-05:pu:512:"Banque":D:860.14:"ouverture compte"
+2011-09-05:pu:101:"Capital social":C:860.14:"ouverture compte"
+limitedefichier
+	}
+
+	function cleanup(){
+rm -f temp
+}
+
 	
 	# TODO: pb premiere ligne pas compte
 	function getallnumcompte_withfilename(){
@@ -71,7 +89,8 @@ debecho "entree dans $FUNCNAME"
 		affiche_test "x${TEST_VIDE_SI_alnum}" "x" 
 			}
 
-
+# lancement des tests
+preload
 echo "$FUNCNAME doit renvoyer des numéros de comptes si parse compta.txt passé en param normal $(getallnumcompte_withfilename compta.txt)"
 echo "$FUNCNAME doit renvoyer des numéros de compts si parase bq_trie.txt passé en param normal $(getallnumcompte_withfilename bq_trie.txt)"
 echo "$FUNCNAME doit renvoyer des numéros de compte si parse compta.txt passé en param < $(getallnumcompte_withoutfilename  <compta.txt)"
@@ -84,7 +103,7 @@ date:util:numcompte:nomcompte:sensope:montantope:libope
 2011-09-05:pu:101:"Capital social":C:860.14:"ouverture compte"
 2011-09-05:co:6257:"frais restauration":D:55.71:"courses alimentaires"
 findefichier
-
+cleanup
 }
 
 
@@ -528,19 +547,23 @@ echo "$FUNCNAME () => ERR ${ERR_NB_PARAM}  $(PREMIERTEST=$(unetunseul); RES=$?; 
 }
 
 function TEST(){
-echo "grep doit exister $(verifie_existence_binaires grep)"
-echo "sed doit exister $(verifie_existence_binaires sed)"
-echo "gawk doit exister $(verifie_existence_binaires gawk)"
-echo "ofxdump doit exister $(verifie_existence_binaires ofxdump)"
+#echo "grep doit exister $(verifie_existence_binaires grep)"
+#echo "sed doit exister $(verifie_existence_binaires sed)"
+#echo "gawk doit exister $(verifie_existence_binaires gawk)"
+#echo "ofxdump doit exister $(verifie_existence_binaires ofxdump)"
+# getallnumcomptes sera testé correctement lorsque son utilité sera prouvée
 #test_getallnumcomptes
+# test_errsipasbq sera testé correctement lorsque son utilité sera prouvée
 #test_errsipasbq
-test_getmontantope
+# test montant opé paramétrisé ok
+# test montant opé les tests sont sous forme de heredoc
+#test_getmontantope
 #test_modifdate
 #test_getlinesfromuser
 #test_getallusers
 #test_triparmontant
 #test_encol_daterfc3339_to_enligne_precompta
-test_ofx_to_encol
-test_unetunseul
+#test_ofx_to_encol
+#test_unetunseul
 }
 TEST

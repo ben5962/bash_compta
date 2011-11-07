@@ -77,6 +77,12 @@ F_BQ="$2"
 # une fonc pour choper les num de comptes
 function getallnumcomptes(){
 # lignes non vides | 3eme champ
+FONCTION="$FUNCNAME"
+function usage(){
+cat << findefichier 
+$FONCTION <fichier_compta> -> n lignes contenant les numéros de comptes
+findefichier
+}
 USAGE="$FUNCNAME <fichier_compta>"
 [ $# -ge 2 ] && echo "ERR: $FUNCNAME a recu $# parm necess 1 param: $USAGE" && exit $ERR_NB_PARAM
 if [ $# -eq 1 ]; then
@@ -137,7 +143,7 @@ return $SUCCES
 
 ###############################################################
 # 2. depuis compta.txt multi util multi comptes 
-# produire un fichier compta.txt|util | 512 trié ordre csst montant opé
+# produire un fichier compta.txt|util | 512 
 ############################################################
 
 
@@ -145,7 +151,7 @@ return $SUCCES
 
 #############################################################
 # 3. depuis un fichier mono-utilisateur ofx
-# produire un fichier bq.txt | (forcément monoutil) trié par ordre csst montant opé
+# produire un fichier bq.txt | (forcément monoutil) 
 ###############################################################
 # ./modifdate.awk |sed -n -f en_ligne.sed | ./danslordre.awk
 # ofx_to_encol <fichier.ofx> | modifdate | encol_daterfc3339_to_enligne_precompta
@@ -287,7 +293,10 @@ p
 ' 
 
 }
-
+#############################################################
+# 4. méler les deux fichiers en préfixant chaque entree de compta ou bq
+#    et produire un contenu trié par montant puis par date puis par bq ou compta
+###############################################################
 
 
 
