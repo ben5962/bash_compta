@@ -1,6 +1,12 @@
 #!/bin/bash
 set -o nounset
 . ./rapprochement_bancaire.sh
+
+#####################
+# compteur de tests
+#####################
+COMPTEUR=0
+
 ######################
 # constantes
 ####################
@@ -53,6 +59,14 @@ else
 	fi
 fi
 }
+
+function incremente_compteur(){
+export COMPTEUR=$((  $COMPTEUR + 1 ))
+}
+##################################
+# les tests de fonctions de rapprochement_bancaire
+#####################################
+
 
 function test_getallnumcomptes(){
 debecho "entree dans $FUNCNAME"	
@@ -159,17 +173,26 @@ date:util:numcompte:nomcompte:sensope:montantope:libope
 2011-09-05:pu:512:"Banque":D:860.14:"ouverture compte"
 2011-09-05:pu:101:"Capital social":C:860.14:"ouverture compte"
 limitedefichier
+
+cat << autrelimite > resultat
+15138.55
+15138.55
+860.14
+860.14
+autrelimite
 }
 
 function cleanup(){
 rm -f temp
+rm -f resultat
 }
 
 function renvoie4lignes(){
 debecho "entree dans $FUNCNAME"
 F_CPTA="temp"
 cat $F_CPTA |\
-#	sed -n '2,$ p'|\
+	# ligne suivante plus nécessaire: getmontantope tronque maintenant premiere ligne lui-meme
+	#	sed -n '2,$ p'|\
 	getmontantope -p |wc -l
 	
 }
@@ -205,15 +228,26 @@ function quedeschiffres(){
 	# lancement des tests
 
 preload
-echo -e "$FUNCNAME doit partir en message d'erreur si on ne lui fournit aucun param \n $(getmontantope)"
+# double emploi avec le test d'en dessous
+#echo -e "$FUNCNAME en appel param normal doit renvoiyer les montants d'un fichier de type compta.txt \n $(COMMANDE='getmontantope -f temp'; echo "COMMANDE: $COMMANDE"; eval $COMMANDE)"
+incremente_compteur
+echo -e "$COMPTEUR $FUNCNAME en appel param normal doit renvoyer les valeurs attendues\n $(COMMANDE='$(getmontantope -f temp > tmp); diff -y --report-identical-files resultat tmp; rm tmp; ERR="$?"; affiche_test $ERR $SUCCES'; echo "COMMANDE: $COMMANDE"; eval $COMMANDE) "
+incremente_compteur
+echo -e "$COMPTEUR $FUNCNAME doit partir en message d'erreur si on ne lui fournit aucun param \n $(COMMANDE='getmontantope'; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE")"
+incremente_compteur
+echo -e "$COMPTEUR $FUNCNAME doit partir en msg d'erreur si on appelle avec param -f mais sans fichier \n $(COMMANDE='getmontantope -f'; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE")"
 #renvoie4lignes
 #comptenblignes
 #invertmatchok
-renvoie4lignesparam
-echo "besoin de vérifier la capacité de grep à pouvoir renvoyer les lignes ne matchant pas $(affiche_test "invert match fonctionne" "$(invertmatchok)")"
-echo "$FONCTION envoi via pipe. nombre de montants extraits : autant que de lignes de donnees $(affiche_test "$(comptenblignes)" "$(renvoie4lignes)")"
-echo "$FONCTION le champ selectionne est le bon s il ne comporte que des montants (chiffres et .) $(affiche_test "x$(quedeschiffres)" "x")"
-echo "$FONCTION envoi via param. nombre de montants extraits : autant que de lignes de donnees $(affiche_test "$(comptenblignes)" "$(renvoie4lignesparam)")"
+#renvoie4lignesparam
+incremente_compteur
+echo "$COMPTEUR besoin de vérifier la capacité de grep à pouvoir renvoyer les lignes ne matchant pas $(affiche_test "invert match fonctionne" "$(invertmatchok)")"
+incremente_compteur
+echo "$COMPTEUR $FONCTION envoi via pipe. nombre de montants extraits : autant que de lignes de donnees $(affiche_test "$(comptenblignes)" "$(renvoie4lignes)")"
+incremente_compteur
+echo "$COMPTEUR $FONCTION le champ selectionne est le bon s il ne comporte que des montants (chiffres et .) $(affiche_test "x$(quedeschiffres)" "x")"
+incremente_compteur
+echo "$COMPTEUR $FONCTION envoi via param. nombre de montants extraits : autant que de lignes de donnees $(affiche_test "$(comptenblignes)" "$(renvoie4lignesparam)")"
 
 cleanup
 }
@@ -517,7 +551,7 @@ limitedeofx
 set -o nounset
 ofx_to_encol temp 2>/dev/null
 ERR="$?"
-debecho "en fonctionnement normal ofxdump produit le msg err ${ERR}"
+debecho "en fonctionnement normal ofx_to_encol produit le msg err ${ERR}"
 rm temp
 return ${ERR}
 } # fin de ofxdump_tempfile_for_diff	
@@ -530,16 +564,21 @@ debexec ofxdump_REFUSES_REDIRECTION_NEEDS_ARG_encol_for_diff
 debecho " pourtant la syntaxe est correcte . preuve :"
 debexec essai_de_heredoc
 debecho "conclusion : ofxdump semble vérifier la présence d un nom de fichier en argument."
-debecho "sera résolu plus tard. pour l instant construction fichier temporaire"
+debecho "sera résolu plus tard. pour l instant construction fichier temporaire et d un wrapper: ofx_to_encol"
 BLOCCOMMENTE
-
-echo "$FUNCNAME 1. ofx->encol => ${SUCCES} $(RESULTAT=$(ofxdump_tempfile_for_diff); ERR=$?; affiche_test ${ERR} ${SUCCES})"
-echo "$FUNCNAME 2. ()->encol => noarg $ERR_NB_PARAM $(RES=$(ofx_to_encol); ERR="$?"; affiche_test ${ERR} ${ERR_NB_PARAM})"
-echo -e "$FUNCNAME 3. (noafile)->encol 2> msg err? \n $(ofx_to_encol qsdfdsf) $(affiche_test ${SUCCES} ${SUCCES})"
-echo -e "$FUNCNAME 3bis (noafile)->encol va retour err $ERR_FICHIER_EXISTEPAS?; $(RES="$(ofx_to_encol qsdfdsf)"; ERR="$?"; affiche_test $ERR $ERR_FICHIER_EXISTEPAS;)"
-
-echo -e "$FUNCNAME 4. (non  vide pas ofx)->encol => noanofx $ERR_PAS_OFX \n $(ofx_to_encol "compta.txt")"
-echo "$FUNCNAME 5. (vide)->encol => noanofx $ERR_PAS_OFX"
+incremente_compteur
+echo "$COMPTEUR $FUNCNAME appel param. normal. val d'err ${SUCCES}? $(COMMANDE="ofxdump_tempfile_for_diff"; echo "COMMANDE: $COMMANDE"; RESULTAT=$($COMMANDE); ERR=$?; affiche_test ${ERR} ${SUCCES})"
+incremente_compteur
+echo "$COMPTEUR $FUNCNAME 2. appel param. pas d'arg. alors qu'exigé. val d'err $ERR_NB_PARAM? $(COMMANDE="ofx_to_encol"; echo "COMMANDE: $COMMANDE"; RES=$($COMMANDE); ERR="$?"; affiche_test ${ERR} ${ERR_NB_PARAM})"
+incremente_compteur
+echo -e "$COMPTEUR $FUNCNAME 3. appel param. param=<nom de fichier inexistant>. msg=fichier <bidule> existe pas?  \n $(ofx_to_encol qsdfdsf) $(affiche_test ${SUCCES} ${SUCCES})"
+incremente_compteur
+echo -e "$COMPTEUR $FUNCNAME 3bis (noafile)->encol va retour err $ERR_FICHIER_EXISTEPAS?; $(RES="$(ofx_to_encol qsdfdsf)"; ERR="$?"; affiche_test $ERR $ERR_FICHIER_EXISTEPAS;)"
+incremente_compteur
+echo -e "$COMPTEUR $FUNCNAME 4. (non  vide pas ofx)->encol => noanofx $ERR_PAS_OFX \n $(ofx_to_encol "compta.txt")"
+incremente_compteur
+echo "$COMPTEUR $FUNCNAME 5. (vide)->encol => noanofx $ERR_PAS_OFX"
+incremente_compteur
 }
 
 function test_unetunseul(){
@@ -551,6 +590,13 @@ echo "$FUNCNAME () => ERR ${ERR_NB_PARAM}  $(PREMIERTEST=$(unetunseul); RES=$?; 
 #unetunseul
 }
 
+function test_incremente_compteur(){
+for i in $(seq -s ' ' 1 10);
+do
+ echo "COMPTEUR: $COMPTEUR"
+ incremente_compteur
+done
+}
 function TEST(){
 #echo "grep doit exister $(verifie_existence_binaires grep)"
 #echo "sed doit exister $(verifie_existence_binaires sed)"
@@ -562,7 +608,7 @@ function TEST(){
 #test_errsipasbq
 # test montant opé paramétrisé ok
 # test montant opé les tests sont sous forme de heredoc
-#test_getmontantope
+test_getmontantope
 #test_modifdate
 #test_getlinesfromuser
 #test_getallusers
@@ -570,5 +616,6 @@ function TEST(){
 #test_encol_daterfc3339_to_enligne_precompta
 test_ofx_to_encol
 #test_unetunseul
+#test_incremente_compteur
 }
 TEST

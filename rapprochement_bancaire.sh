@@ -181,9 +181,10 @@ echo "$FONCTION <fichier.ofx> -> fichier encol"
 
 # homeostasie
 #un seul param
+#TODO: passer à aumoinsun lors paramétrisation -f et -p
 unetunseul "$@"
 # le param doit correspondre à un fichier existant
-if [ ! -e "$1" ]; then echo "le fichier $1 n'existe pas"; usage; exit $ERR_FICHIER_EXISTEPAS; fi
+if [ ! -e "$1" ]; then echo "ERR: $FONCTION: le fichier $1 n'existe pas"; usage; exit $ERR_FICHIER_EXISTEPAS; fi
 function detect_ofx_type(){
 PREMIERE_LIGNE="$(head -n 1 "$@")"
 debecho "premiere ligne : $PREMIERE_LIGNE"
@@ -369,7 +370,7 @@ FONCTION=${FUNCNAME}
 	}
 
 # gestion des params pour arbitrer les appels
-function interface(){
+function getmontantope_interface(){
 #debecho "\$\@ vaut : $@"
 # p avec 0 argument donc p(rien)
 # f avec 1 argument donc f":"
@@ -391,7 +392,7 @@ shift $(( ${OPTIND} - 1 ))
 
 	# appels de fonctions 
 	# sanspipe "$@"
-	interface "$@"
+	getmontantope_interface "$@"
 
 } # fin de getmontantope
 
