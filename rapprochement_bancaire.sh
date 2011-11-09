@@ -5,6 +5,7 @@ ERR_NB_PARAM=65
 ERR_FICHIER_EXISTEPAS=100
 ERR_PAS_512=200
 ERR_PAS_OFX=201
+ERR_FICHIER_VIDE=202
 SUCCES="0"
 # les valeurs qu'on peut passer à 1
 # avant d invoquer rapprochement_bancaire:
@@ -52,6 +53,36 @@ then
 fi
 }
 
+
+
+
+
+function fichier_doit_exister(){
+if [ ! -f "$1" ]; then echo "ERR: $FONCTION: le fichier $1 n'existe pas"; usage; exit $ERR_FICHIER_EXISTEPAS; fi
+}
+
+
+
+function fichier_doit_etre_de_type_ofx(){
+PREMIERE_LIGNE="$(head -n 1 "$@")"
+debecho "premiere ligne : $PREMIERE_LIGNE"
+CRITERE="OFXHEADER:100"
+if [ "${PREMIERE_LIGNE}" == "${CRITERE}" ];
+then
+	debecho "$1 est un fichier de type ofx"
+	return $SUCCES
+else
+
+	debecho "$1 n est pas un fichier de type ofx"
+	usage;
+	exit $ERR_PAS_OFX
+fi
+}
+
+
+function fichier_doit_etre_non_vide(){
+if [ ! -s "$1" ]; then echo "ERR: $FONCTION: le fichier $1 est vide"; usage; exit $ERR_FICHIER_VIDE; fi
+}
 #################################
 # 1 VERIF DES ENTREES UTILISATEUR
 ##################################
@@ -184,24 +215,10 @@ echo "$FONCTION <fichier.ofx> -> fichier encol"
 #TODO: passer à aumoinsun lors paramétrisation -f et -p
 unetunseul "$@"
 # le param doit correspondre à un fichier existant
-if [ ! -e "$1" ]; then echo "ERR: $FONCTION: le fichier $1 n'existe pas"; usage; exit $ERR_FICHIER_EXISTEPAS; fi
-function detect_ofx_type(){
-PREMIERE_LIGNE="$(head -n 1 "$@")"
-debecho "premiere ligne : $PREMIERE_LIGNE"
-CRITERE="OFXHEADER:100"
-if [ "${PREMIERE_LIGNE}" == "${CRITERE}" ];
-then
-	debecho "$1 est un fichier de type ofx"
-	return $SUCCES
-else
+fichier_doit_exister "$1"
 
-	debecho "$1 n est pas un fichier de type ofx"
-	usage;
-	exit $ERR_PAS_OFX
-fi
-}
-detect_ofx_type "$1"
-
+fichier_doit_etre_de_type_ofx "$1"
+fichier_doit_etre_non_vide "$1"
 # toujours là? c'est que tout est bon. appel de fonction.
 ofxdump "$1" --msg_warning  --msg_status --msg_info 2> ofx.err
 return ${SUCCES}
