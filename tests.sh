@@ -553,8 +553,9 @@ echo -e "$COMPTEUR $FUNCNAME 3bis appel param. param=<nom de fichier inexistant>
 incremente_compteur
 echo -e "$COMPTEUR $FUNCNAME 4.appel param.=<non  vide pas ofx>. val retour err= $ERR_PAS_OFX? \n $(COMMANDE='RES=$(ofx_to_encol pasunofx); export ERRI="$?"'; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE"; affiche_test ${ERRI} ${ERR_PAS_OFX})"
 incremente_compteur
-echo "$COMPTEUR $FUNCNAME 5. (vide)->encol => noanofx $ERR_PAS_OFX"
-incremente_compteur
+echo "$COMPTEUR $FUNCNAME 5. (vide)->encol => noanofx $ERR_PAS_OFX $(COMMANDE='RES="$(ofx_to_encol fichiervide)"; export ERRO="$?"; '; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE"; affiche_test ${ERRO} ${ERR_FICHIER_VIDE})"
+
+
 cleanup
 }
 
@@ -573,6 +574,17 @@ do
  echo "COMPTEUR: $COMPTEUR"
  incremente_compteur
 done
+}
+
+
+function test_fichier_doit_etre_non_vide(){
+touch essai
+incremente_compteur
+RES=$(fichier_doit_etre_non_vide essai); ERR="$?"
+echo "$COMPTEUR $FUNCNAME lanchement de fichier_doit_etre_non_vide sur un fichier vide renvoie val $ERR_FICHIER_VIDE $(affiche_test ${ERR} ${ERR_FICHIER_VIDE})"
+#echo "TODO: $FUNCNAME "
+rm essai
+
 }
 function TEST(){
 #echo "grep doit exister $(verifie_existence_binaires grep)"
@@ -594,5 +606,6 @@ test_getmontantope
 test_ofx_to_encol
 #test_unetunseul
 #test_incremente_compteur
+test_fichier_doit_etre_non_vide
 }
 TEST

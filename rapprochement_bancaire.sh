@@ -58,7 +58,7 @@ fi
 
 
 function fichier_doit_exister(){
-if [ ! -f "$1" ]; then echo "ERR: $FONCTION: le fichier $1 n'existe pas"; usage; exit $ERR_FICHIER_EXISTEPAS; fi
+if [ ! -f "$1" ]; then echo "ERR: $FONCTION: le fichier $1 n'existe pas"; usage; return $ERR_FICHIER_EXISTEPAS; fi
 }
 
 
@@ -81,7 +81,10 @@ fi
 
 
 function fichier_doit_etre_non_vide(){
-if [ ! -s "$1" ]; then echo "ERR: $FONCTION: le fichier $1 est vide"; usage; exit $ERR_FICHIER_VIDE; fi
+if [ ! -s "$1" ]; 
+then echo "ERR: $FONCTION: le fichier $1 est vide"; 
+	#usage; 
+	exit $ERR_FICHIER_VIDE; fi
 }
 #################################
 # 1 VERIF DES ENTREES UTILISATEUR
@@ -184,7 +187,27 @@ return $SUCCES
 # 2. depuis compta.txt multi util multi comptes 
 # produire un fichier compta.txt|util | 512 
 ############################################################
+# journalmultiu_to_extraitgl_monou_monoc
+# glmultiu_to_journal_unseulu -f compta.txt -u co -cpte 512
+# construire progressivement la regex multi critères
+# seulement 512: gawk -V util=$UTIL -V compte=$COMPTE....  
+# $3 -> numcomptes
+# $2 -> users
+# /$2==util && $3==compte/
+# gawk -F: -v util="co" -v compte="512" "\$2==util && \$3==compte" compta.txt
+# gawk -F: -v util=qfd -v compte="dqfqsdf" "$CHAINE" compta.txt
+# gawk -F: $CHAINE
+function journalmultiu_to_extraitgl_monou_monoc(){
+echo "$FUNCTION: TODO"
+#case $OPT in
+# si util spécifié, CHAINE="$CHAINE && \$2==util"
+# gawk -u "co"
+#u) ;;
 
+#esac
+# CHAINE="-F: $PARAMUTIL $PARAMCOMPTE \"$CHAINEUTIL && $CHAINENUMCOMPTE\""
+# gawk $CHAINE
+}
 
 
 
@@ -216,9 +239,8 @@ echo "$FONCTION <fichier.ofx> -> fichier encol"
 unetunseul "$@"
 # le param doit correspondre à un fichier existant
 fichier_doit_exister "$1"
-
-fichier_doit_etre_de_type_ofx "$1"
 fichier_doit_etre_non_vide "$1"
+fichier_doit_etre_de_type_ofx "$1"
 # toujours là? c'est que tout est bon. appel de fonction.
 ofxdump "$1" --msg_warning  --msg_status --msg_info 2> ofx.err
 return ${SUCCES}
