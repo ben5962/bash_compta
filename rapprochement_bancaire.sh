@@ -81,7 +81,7 @@ fi
 
 
 function fichier_doit_etre_non_vide(){
-if [ ! -s "$1" ]; 
+if [ -f "$1" -a ! -s "$1" ]; 
 then echo "ERR: $FONCTION: le fichier $1 est vide"; 
 	#usage; 
 	exit $ERR_FICHIER_VIDE; fi
