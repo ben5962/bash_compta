@@ -231,7 +231,7 @@ preload
 # double emploi avec le test d'en dessous
 #echo -e "$FUNCNAME en appel param normal doit renvoiyer les montants d'un fichier de type compta.txt \n $(COMMANDE='getmontantope -f temp'; echo "COMMANDE: $COMMANDE"; eval $COMMANDE)"
 incremente_compteur
-echo -e "$COMPTEUR $FUNCNAME en appel param normal doit renvoyer les valeurs attendues\n $(COMMANDE='$(getmontantope -f temp > tmp); diff -y --report-identical-files resultat tmp; rm tmp; ERR="$?"; affiche_test $ERR $SUCCES'; echo "COMMANDE: $COMMANDE"; eval $COMMANDE) "
+echo -e "$COMPTEUR $FUNCNAME en appel param normal doit renvoyer les valeurs attendues\n $(COMMANDE='$(getmontantope -f temp > tmp); diff -y --report-identical-files resultat tmp; ERR="$?"; rm tmp; affiche_test $ERR $SUCCES'; echo "COMMANDE: $COMMANDE"; eval $COMMANDE) "
 incremente_compteur
 echo -e "$COMPTEUR $FUNCNAME doit partir en message d'erreur si on ne lui fournit aucun param \n $(COMMANDE='getmontantope'; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE")"
 incremente_compteur
@@ -252,7 +252,7 @@ echo "$COMPTEUR $FONCTION envoi via param. nombre de montants extraits : autant 
 cleanup
 }
 
-function test_modifdate(){
+function test_modifdateawk(){
 debecho "entree dans $FUNCNAME"
 verifie_existence_binaires "ofxdump"
 
@@ -586,26 +586,143 @@ echo "$COMPTEUR $FUNCNAME lanchement de fichier_doit_etre_non_vide sur un fichie
 rm essai
 
 }
+
+function test_journalmultiu_to_extraitgl_monou_monoc(){
+
+
+function preload(){
+cat <<fin_entree > resultat_voulu
+date:util:numcompte:nomcompte:sensope:montantope:libope
+2011-09-05:co:512:"Banque":D:15138.55:"ouverture compte"
+2011-09-05:co:512:"Banque":C:55.71:"courses alimentaires"
+2011-09-05:co:512:"Banque":C:7.01:"courses alimentaires"
+2011-09-10:co:512:"Banque":C:20:"retrait pour frites et cafés"
+2011-09-15:co:512:"Banque":C:32:"Télécom FT - fa 0320376880 11G5 2B05 - cheque 1494015f carnet 26969"
+2011-09-15:co:512:"Banque":C:35.09:"EDF pmt fa 011E111629025 cheque 1494016g carnet 26969"
+2011-09-15:co:512:"Banque":C:36.53:"pmt fa GDF n° f508755733577 par chq n° 1494017a carnet 26969"
+2011-09-17:co:512:"Banque":C:15.63:"achat essence sandero"
+2011-09-19:co:512:"Banque":C:55.55:"rhodes - voiture - pmt assurance + réservation voiture"
+fin_entree
+
+
+
+cat <<limite_entree > entree_de_test
+date:util:numcompte:nomcompte:sensope:montantope:libope
+2011-09-05:co:512:"Banque":D:15138.55:"ouverture compte"
+2011-09-05:co:101:"Capital social":C:15138.55:"ouverture compte"
+2011-09-05:pu:512:"Banque":D:860.14:"ouverture compte"
+2011-09-05:pu:101:"Capital social":C:860.14:"ouverture compte"
+2011-09-05:co:6257:"frais restauration":D:55.71:"courses alimentaires"
+2011-09-05:co:512:"Banque":C:55.71:"courses alimentaires"
+2011-09-05:co:6257:"frais restauration":D:7.01:"courses alimentaires"
+2011-09-05:co:512:"Banque":C:7.01:"courses alimentaires"
+2011-09-10:co:530:"Caisse":D:20:"retrait pour frites et cafés"
+2011-09-10:co:512:"Banque":C:20:"retrait pour frites et cafés"
+2011-09-07:pu:530:"Caisse":D:20:"retrait pour alimenter caisse"
+2011-09-07:pu:512:"Banque":C:20:"retrait pour alimenter caisse"
+2011-09-10:co:6257:"Frais restauration":C:3.70:"pmt caisse frites"
+2011-09-10:co:530:"Caisse":D:3.70:"pmt caisse frites"
+2011-09-07:pu:6234:"Cadeaux":C:10:"pmt  cai 10E cadeau france"
+2011-09-07:pu:530:"Caisse":D:10:"pmt  cai 10E cadeau france"
+2011-09-10:pu:6257:"Frais restauration":D:2.60:"pmt caisse tomates"
+2011-09-10:pu:530:"Caisse":C:2.60:"pmt caisse tomates"
+2011-09-10:pu:6257:"Frais restauration":D:5.91:"pmt caisse carrefour market saucisses + oeufs"
+2011-09-10:pu:530:"Caisse":C:5.91:"pmt caisse carrefour market saucisses + oeufs"
+2011-09-12:pu:6257:"Frais restauration":D:36.23:"pmt CB auchan englos"
+2011-09-12:pu:512:"Banque":C:36.23:"pmt CB auchan englos"
+2011-09-12:pu:6257:"Frais restauration":D:16.71:"pmt CB match"
+2011-09-12:pu:512:"Banque":C:16.71:"pmt CB match"
+2011-09-15:co:6261:"Frais postaux et télécom - ligne fixe FT":D:32:"Télécom FT"
+2011-09-15:co:512:"Banque":C:32:"Télécom FT - fa 0320376880 11G5 2B05 - cheque 1494015f carnet 26969"
+2011-09-15:co:411IOUPC:"IOU - Puce doit à Co - Créance cpt co":D:16:"1/2 Télécom FT"
+2011-09-15:co:79161:"Transfert de charges d\'exploit -partage FT en deux":C:16:"1/2 Télécom FT"
+2011-09-15:pu:655561:"Quote part de charges sur opé communes - 1/2 FT":D:16:"charge reportée par co - 1/2 Télécom FT"
+2011-09-15:pu:401IOUPC:"IOU - Puce doit à co - dette cpte pu":C:16:"dette envers co - 1/2 Télécom FT"
+2011-09-15:co:60611:"achat fourniture non stockable (énergie -EDF)":D:35.09:"EDF"
+2011-09-15:co:512:"Banque":C:35.09:"EDF pmt fa 011E111629025 cheque 1494016g carnet 26969"
+2011-09-15:co:411IOUPC:"IOU - Puce doit à co - créance sur compte cl":D:17.5:"report charge vers pu - 1/2 EDF "
+2011-09-15:co:791162:"Transfert de charges d\'exploit - partage EDF ":C:17.5:"1/2 EDF"
+2011-09-15:pu:65555EDF:"Quote part de charges sur opé communes - 1/2 EDF":D:17.5:"charge reportée par co -1/2 EDF"
+2011-09-15:pu:411IOUPC:"IOU - puce doit à co - Dette sur compte pu":C:17.5:"dette envers co - 1/2 EDF"
+2011-09-15:co:60612:"achat fourniture non stockable (energie - GDF)":D:36.53:"1/2 EDF"
+2011-09-15:co:512:"Banque":C:36.53:"pmt fa GDF n° f508755733577 par chq n° 1494017a carnet 26969"
+2011-09-15:co:411IOUPC:"IOU - Puce doit à co - créance compte co":D:36.53:"créance sur pu 1/2 GDF"
+2011-09-15:co:791163:"Transfert de charges d'exploit - partage GDF":C:36.53:"report charge vers pu 1/2 GDF"
+2011-09-15:pu:401IOUPC:"IOU - Puce doit à co - GDF":C:36.53:"1/2 GDF"
+2011-09-15:pu:65555GDF:"Quote part de charges sur opés communes - 1/2 GDF":D:36.53:"charge reportée par co - 1/2 GDF"
+2011-09-15:co:6257:"frais restauration":D:7.5:"pmt caisse cafés"
+2011-09-15:co:530:"Caisse":C:7.5:"pmt caisse cafés"
+2011-09-17:co:6248:"transport - divers - carburant ":D:15.63:"achat essence sandero"
+2011-09-17:co:512:"Banque":C:15.63:"achat essence sandero"
+2011-09-17:pu:6257:"frais restauration":D:8.57:"achat jus pruneau leclerc bailleul"
+2011-09-17:pu:530:"Caisse":C:8.57:"achat jus pruneau leclerc bailleul"
+2011-09-19:co:6251:"Voyages et déplacements":D:17.05:"rhodes - réservation voiture"
+2011-09-19:co:6251:"Voyages et déplacements":D:100.90:"rhodes - voiture - à payer sur site"
+2011-09-19:co:616:"Primes d'assurance":D:38.50:"rhodes - voiture - rachat de franchise"
+2011-09-19:co:512:"Banque":C:55.55:"rhodes - voiture - pmt assurance + réservation voiture"
+limite_entree
+}
+
+function cleanup(){
+rm -f resultat_voulu
+rm -f entree_de_test
+
+}
+
+
+function normal(){
+journalmultiu_to_extraitgl_monou_monoc -u co -c 512 -g entree_de_test > mouais
+diff -y --report-identical-files mouais resultat_voulu; ERR=$?
+rm -f mouais
+return "$?"
+
+}
+#####################
+# lancement des tests
+#####################
+preload
+normal
+
+
+cleanup
+
+}
+
 function TEST(){
-#echo "grep doit exister $(verifie_existence_binaires grep)"
-#echo "sed doit exister $(verifie_existence_binaires sed)"
-#echo "gawk doit exister $(verifie_existence_binaires gawk)"
-#echo "ofxdump doit exister $(verifie_existence_binaires ofxdump)"
+#############################
+# tests en cours de mise au point 
+#############################
+
+test_modifdate
 # getallnumcomptes sera testé correctement lorsque son utilité sera prouvée
 #test_getallnumcomptes
 # test_errsipasbq sera testé correctement lorsque son utilité sera prouvée
 #test_errsipasbq
 # test montant opé paramétrisé ok
 # test montant opé les tests sont sous forme de heredoc
-test_getmontantope
-#test_modifdate
+#test_getmontantope
+#test_modifdateawk
 #test_getlinesfromuser
 #test_getallusers
 #test_triparmontant
 #test_encol_daterfc3339_to_enligne_precompta
-test_ofx_to_encol
+###############################
+# tests non satisfaisants
+##############################
 #test_unetunseul
 #test_incremente_compteur
-test_fichier_doit_etre_non_vide
+
+
+########################
+# tests satisfaisants
+########################
+# incremente_compteur; echo "$COMPTEUR grep doit exister $(verifie_existence_binaires grep)"
+# incremente_compteur; echo "$COMPTEUR sed doit exister $(verifie_existence_binaires sed)"
+# incremente_compteur; echo "$COMPTEUR gawk doit exister $(verifie_existence_binaires gawk)"
+# incremente_compteur; echo "$COMPTEUR ofxdump doit exister $(verifie_existence_binaires ofxdump)"
+
+#test_journalmultiu_to_extraitgl_monou_monoc
+# test_ofx_to_encol
+# test_fichier_doit_etre_non_vide
 }
 TEST

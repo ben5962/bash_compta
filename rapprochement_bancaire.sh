@@ -58,7 +58,7 @@ fi
 
 
 function fichier_doit_exister(){
-if [ ! -f "$1" ]; then echo "ERR: $FONCTION: le fichier $1 n'existe pas"; usage; return $ERR_FICHIER_EXISTEPAS; fi
+if [ ! -f "$1" ]; then echo "ERR: $FONCTION: le fichier $1 n'existe pas"; usage; exit $ERR_FICHIER_EXISTEPAS; fi
 }
 
 
@@ -198,15 +198,34 @@ return $SUCCES
 # gawk -F: -v util=qfd -v compte="dqfqsdf" "$CHAINE" compta.txt
 # gawk -F: $CHAINE
 function journalmultiu_to_extraitgl_monou_monoc(){
-echo "$FUNCTION: TODO"
-#case $OPT in
+#echo "$FUNCNAME: TODO"
+while getopts ":u:c:g:" OPT 
+do
+case $OPT in
 # si util spécifié, CHAINE="$CHAINE && \$2==util"
 # gawk -u "co"
-#u) ;;
+u) UTIL=${OPTARG}; 
+	#echo "util vaut: $UTIL"
+	;;
+c) COMPTE=${OPTARG}; 
+	#echo "compte vaut: $COMPTE"
+	;;
+g) FICHIER=${OPTARG}; 
+	#echo "fichier vaut: $FICHIER";;
+esac
+done
+shift $(( $OPTIND - 1 ))
+CHAINE="-F: -v util=$UTIL -v compte=$COMPTE" 
+FILTRE="'\$2 == util && \$3 == compte'" 
+#echo "filtre: $FILTRE"
+#echo "CHAINE: $CHAINE  FILTRE: $FILTRE  FICHIER: $FICHIER"
+#echo "$CHAINE $FILTRE $FICHIER"
+#gawk $CHAINE $FILTRE $FICHIER 2> gawk.err
+#sed -n -e '1 p' $FICHIER
 
-#esac
-# CHAINE="-F: $PARAMUTIL $PARAMCOMPTE \"$CHAINEUTIL && $CHAINENUMCOMPTE\""
-# gawk $CHAINE
+# la premiere ligne d'un fichier compta doit etre la suivante: 
+echo "date:util:numcompte:nomcompte:sensope:montantope:libope"
+gawk -F: -v util=$UTIL -v compte=$COMPTE '$2==util && $3==compte' $FICHIER
 }
 
 
