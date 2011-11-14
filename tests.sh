@@ -688,6 +688,425 @@ cleanup
 
 }
 
+
+
+
+
+
+function test_modifdate(){
+#modifdate
+# entreeofx -- ofx_to_encol --> entree_encol --  modifdate --> entree_encol-date_rfc3339
+# il me faut donc :
+# une entree de type encol
+# une sortie de type encol_date3339
+
+function preload(){
+set +o nounset
+cat <<encol > encol
+ofx_proc_status():
+    Ofx entity this status is relevent to: SONRS 
+    Severity: INFO
+    Code: 0, name: Success
+    Description: The server successfully processed the request.
+
+ofx_proc_status():
+    Ofx entity this status is relevent to: STMTTRNRS 
+    Severity: INFO
+    Code: 0, name: Success
+    Description: The server successfully processed the request.
+
+ofx_proc_account():
+    Account ID: 20041 01005 1081437V026
+    Account name: Bank account 1081437V026
+    Account type: CHECKING
+    Currency: EUR
+    Bank ID: 20041
+    Branch ID: 01005
+    Account #: 1081437V026
+
+ofx_proc_statement():
+    Currency: EUR
+    Account ID: 20041 01005 1081437V026
+    Start date of this statement: Tue Oct 18 12:59:00 2011 CEST
+    End date of this statement: Fri Nov  4 10:59:00 2011 CET
+    Ledger balance: 16603.58
+    Available balance: 16603.58
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: DIRECTDEP: Direct deposit
+    Date posted: Thu Nov  3 10:59:00 2011 CET
+    Total money amount: -350.00
+    # of units: 350.00
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUWALLQ_
+    Name of payee or transaction description: VIREMENT POUR
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Wed Nov  2 10:59:00 2011 CET
+    Total money amount: -15.73
+    # of units: 15.73
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUMALLR5
+    Name of payee or transaction description: ACHAT CB SUPER U        01.11.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: ATM: ATM debit or credit (Note: Depends on signage of amount)
+    Date posted: Wed Nov  2 10:59:00 2011 CET
+    Total money amount: -20.00
+    # of units: 20.00
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUMALLEF
+    Name of payee or transaction description: CARTE MASTERCA 31/10/11 A 12H38
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: DIRECTDEP: Direct deposit
+    Date posted: Wed Nov  2 10:59:00 2011 CET
+    Total money amount: 1501.00
+    # of units: -1501.00
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUMAC$RO
+    Name of payee or transaction description: VIREMENT DE LECLERE
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Mon Oct 31 10:59:00 2011 CET
+    Total money amount: -23.93
+    # of units: 23.93
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUVALNWF
+    Name of payee or transaction description: ACHAT CB AUCHAN ENGLOS  29.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Mon Oct 31 10:59:00 2011 CET
+    Total money amount: -5.44
+    # of units: 5.44
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUVALLZR
+    Name of payee or transaction description: ACHAT CB SUPERMARCHE MA 29.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: DIRECTDEP: Direct deposit
+    Date posted: Mon Oct 31 10:59:00 2011 CET
+    Total money amount: 1542.20
+    # of units: -1542.20
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUVACAVO
+    Name of payee or transaction description: VIREMENT DE DOMOVEIL SARL
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Fri Oct 28 11:59:00 2011 CEST
+    Total money amount: -15.61
+    # of units: 15.61
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUKALLF5
+    Name of payee or transaction description: ACHAT CB Hyper Service  27.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Tue Oct 25 11:59:00 2011 CEST
+    Total money amount: -63.03
+    # of units: 63.03
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUJAL849
+    Name of payee or transaction description: ACHAT CB AUCHAN DRIVE I 23.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Tue Oct 25 11:59:00 2011 CEST
+    Total money amount: -25.47
+    # of units: 25.47
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUJALH8F
+    Name of payee or transaction description: ACHAT CB AUCHAN ENGLOS  24.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Fri Oct 21 11:59:00 2011 CEST
+    Total money amount: -9.98
+    # of units: 9.98
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXU2ALLUZ
+    Name of payee or transaction description: ACHAT CB SUPERMARCHE MA 20.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Fri Oct 21 11:59:00 2011 CEST
+    Total money amount: -8.80
+    # of units: 8.80
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXU2ALLLP
+    Name of payee or transaction description: ACHAT CB CASTORAMA      20.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Thu Oct 20 11:59:00 2011 CEST
+    Total money amount: -16.58
+    # of units: 16.58
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUSAL%FF
+    Name of payee or transaction description: ACHAT CB HYPERSERVIC BV 18.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: ATM: ATM debit or credit (Note: Depends on signage of amount)
+    Date posted: Thu Oct 20 11:59:00 2011 CEST
+    Total money amount: -10.00
+    # of units: 10.00
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUSALLL3
+    Name of payee or transaction description: CARTE MASTERCA 19/10/11 A 18H59
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Tue Oct 18 11:59:00 2011 CEST
+    Total money amount: -63.54
+    # of units: 63.54
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUOALYU9
+    Name of payee or transaction description: ACHAT CB AUCHAN DRIVE I 16.10.11
+
+ofx_proc_transaction():
+    Account ID : 20041 01005 1081437V026
+    Transaction type: POS: Point of sale debit or credit (Note: Depends on signage of amount)
+    Date posted: Tue Oct 18 11:59:00 2011 CEST
+    Total money amount: -37.50
+    # of units: 37.50
+    Unit price: 1.00
+    Financial institution's ID for this transaction: PIXUOALGRO
+    Name of payee or transaction description: ACHAT CB DR BATAILLE MI 17.10.11
+encol
+
+
+cat <<rfc > rfc
+ofx_proc_status():
+Ofx entity this status is relevent to|SONRS 
+Severity|INFO
+Code|0, name: Success
+Description|The server successfully processed the request.
+
+ofx_proc_status():
+Ofx entity this status is relevent to|STMTTRNRS 
+Severity|INFO
+Code|0, name: Success
+Description|The server successfully processed the request.
+
+ofx_proc_account():
+Account ID|20041 01005 1081437V026
+Account name|Bank account 1081437V026
+Account type|CHECKING
+Currency|EUR
+Bank ID|20041
+Branch ID|01005
+Account #|1081437V026
+
+ofx_proc_statement():
+Currency|EUR
+Account ID|20041 01005 1081437V026
+Start date of this statement|Tue Oct 18 12:59:00 2011 CEST
+End date of this statement|Fri Nov  4 10:59:00 2011 CET
+Ledger balance|16603.58
+Available balance|16603.58
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|DIRECTDEP: Direct deposit
+Date posted| 2011-11-03
+Total money amount|-350.00
+# of units|350.00
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUWALLQ_
+Name of payee or transaction description|VIREMENT POUR
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-11-02
+Total money amount|-15.73
+# of units|15.73
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUMALLR5
+Name of payee or transaction description|ACHAT CB SUPER U        01.11.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|ATM: ATM debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-11-02
+Total money amount|-20.00
+# of units|20.00
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUMALLEF
+Name of payee or transaction description|CARTE MASTERCA 31/10/11 A 12H38
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|DIRECTDEP: Direct deposit
+Date posted| 2011-11-02
+Total money amount|1501.00
+# of units|-1501.00
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUMAC$RO
+Name of payee or transaction description|VIREMENT DE LECLERE
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-31
+Total money amount|-23.93
+# of units|23.93
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUVALNWF
+Name of payee or transaction description|ACHAT CB AUCHAN ENGLOS  29.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-31
+Total money amount|-5.44
+# of units|5.44
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUVALLZR
+Name of payee or transaction description|ACHAT CB SUPERMARCHE MA 29.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|DIRECTDEP: Direct deposit
+Date posted| 2011-10-31
+Total money amount|1542.20
+# of units|-1542.20
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUVACAVO
+Name of payee or transaction description|VIREMENT DE DOMOVEIL SARL
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-28
+Total money amount|-15.61
+# of units|15.61
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUKALLF5
+Name of payee or transaction description|ACHAT CB Hyper Service  27.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-25
+Total money amount|-63.03
+# of units|63.03
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUJAL849
+Name of payee or transaction description|ACHAT CB AUCHAN DRIVE I 23.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-25
+Total money amount|-25.47
+# of units|25.47
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUJALH8F
+Name of payee or transaction description|ACHAT CB AUCHAN ENGLOS  24.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-21
+Total money amount|-9.98
+# of units|9.98
+Unit price|1.00
+Financial institution's ID for this transaction|PIXU2ALLUZ
+Name of payee or transaction description|ACHAT CB SUPERMARCHE MA 20.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-21
+Total money amount|-8.80
+# of units|8.80
+Unit price|1.00
+Financial institution's ID for this transaction|PIXU2ALLLP
+Name of payee or transaction description|ACHAT CB CASTORAMA      20.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-20
+Total money amount|-16.58
+# of units|16.58
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUSAL%FF
+Name of payee or transaction description|ACHAT CB HYPERSERVIC BV 18.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|ATM: ATM debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-20
+Total money amount|-10.00
+# of units|10.00
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUSALLL3
+Name of payee or transaction description|CARTE MASTERCA 19/10/11 A 18H59
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-18
+Total money amount|-63.54
+# of units|63.54
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUOALYU9
+Name of payee or transaction description|ACHAT CB AUCHAN DRIVE I 16.10.11
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|POS: Point of sale debit or credit (Note: Depends on signage of amount)
+Date posted| 2011-10-18
+Total money amount|-37.50
+# of units|37.50
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUOALGRO
+Name of payee or transaction description|ACHAT CB DR BATAILLE MI 17.10.11
+rfc
+set -o nounset
+} # fin de preload
+
+function cleanup(){
+rm -f encol
+rm -f rfc
+
+} # fin de cleanup
+function normal(){
+modifdate encol > atester
+diff -y --report-identical-files rfc atester
+
+rm -f atester
+} # fin de normal
+
+
+preload
+normal
+cleanup
+}
+
+
+
 function TEST(){
 #############################
 # tests en cours de mise au point 
