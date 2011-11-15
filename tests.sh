@@ -1,7 +1,8 @@
 #!/bin/bash
 set -o nounset
 . ./rapprochement_bancaire.sh
-
+# note vim: plier sur une fonction: zf% sur une {
+# note vim: déplier sur une fonction : zd sur une {
 #####################
 # compteur de tests
 #####################
