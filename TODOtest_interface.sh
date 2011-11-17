@@ -77,4 +77,4 @@ shift $(( ${OPTIND} - 1 ))
 	getmontantope_interface "$@"
 
 } # fin de getmontantope
-
+getmontantope -f compta.txt 2> getmontantope.err

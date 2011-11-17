@@ -240,17 +240,15 @@ preload
 # double emploi avec le test d'en dessous
 #echo -e "$FUNCNAME en appel param normal doit renvoiyer les montants d'un fichier de type compta.txt \n $(COMMANDE='getmontantope -f temp'; echo "COMMANDE: $COMMANDE"; eval $COMMANDE)"
 incremente_compteur
-echo -e "$COMPTEUR $FUNCNAME en appel param normal doit renvoyer les valeurs attendues\n $(COMMANDE='$(getmontantope -f temp > tmp); diff -y --report-identical-files resultat tmp; ERR="$?"; rm tmp; affiche_test $ERR $SUCCES'; echo "COMMANDE: $COMMANDE"; eval $COMMANDE) "
+echo -e "$COMPTEUR $FUNCNAME en appel param normal doit renvoyer les valeurs attendues\n $(COMMANDE='$(getmontantope -f temp > tmp); echo "cat du resultat de getmontantope: "; cat tmp; echo "cat de ce qui est attendu:"; cat resultat; diff -y --report-identical-files resultat tmp; ERR="$?"; affiche_test $ERR $SUCCES'; echo "COMMANDE: $COMMANDE"; eval $COMMANDE; rm tmp; ) "
 incremente_compteur
 echo -e "$COMPTEUR $FUNCNAME doit partir en message d'erreur si on ne lui fournit aucun param \n $(COMMANDE='getmontantope'; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE")"
 incremente_compteur
 echo -e "$COMPTEUR $FUNCNAME doit partir en msg d'erreur si on appelle avec param -f mais sans fichier \n $(COMMANDE='getmontantope -f'; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE")"
 
-echo "envoi de 4 lignes"
-renvoie4lignes
-comptenblignes
-echo "oups. et essai basique?"
-essai_basique_pipe
+#renvoie4lignes
+#comptenblignes
+#essai_basique_pipe
 #invertmatchok
 echo "et hors le pipe est ce que le file fonctionne?"
 renvoie4lignesparam
@@ -707,6 +705,10 @@ cleanup
 
 
 
+
+
+
+
 function test_modifdate(){
 #modifdate
 # entreeofx -- ofx_to_encol --> entree_encol --  modifdate --> entree_encol-date_rfc3339
@@ -1132,7 +1134,7 @@ function TEST(){
 # tests en cours de mise au point 
 #############################
 ##test_interface_ofx_to_bq
-test_modifdate
+#test_modifdate
 # getallnumcomptes sera testé correctement lorsque son utilité sera prouvée
 #test_getallnumcomptes
 # test_errsipasbq sera testé correctement lorsque son utilité sera prouvée
