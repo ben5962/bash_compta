@@ -248,6 +248,7 @@ echo -e "$COMPTEUR $FUNCNAME doit partir en msg d'erreur si on appelle avec para
 
 #renvoie4lignes
 #comptenblignes
+echo "essai basique de pipe"
 essai_basique_pipe
 #invertmatchok
 echo "et hors le pipe est ce que le file fonctionne?"

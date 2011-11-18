@@ -1,2 +1,2 @@
 #!/bin/bash
-gawk -F: '{print $3 $4 }' compta.txt  |sort |uniq
+gawk -F: '{print $3 $4 $7}' compta.txt  |sort |uniq

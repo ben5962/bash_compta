@@ -1,5 +1,5 @@
 #!/bin/bash
-
+. ./compta.conf
 CALLER=`basename $0`
 TEMP="tmp"
 SUCCES=0
@@ -743,6 +743,5 @@ esac
 # sCu(itl)cpt $util cpte | opesutilcpteD | opesutilcpteC 
 
 
-#TODO : ajouter une commande de vérif de balanc
-#TODO : donc ajouter une commande qui écrit les soldes de cpte avant et apres opération
+#DONE : ajouter une commande de vérif de balanc
 #TODO : gencodecase marche PAS!!!!!
