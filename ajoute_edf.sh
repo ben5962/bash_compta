@@ -1,11 +1,11 @@
 #!/bin/bash - 
 #===============================================================================
 #
-#          FILE:  ajoute_courses.sh
+#          FILE:  ajoute_edf.sh
 # 
-#         USAGE:  ./ajoute_courses.sh 
+#         USAGE:  ./ajoute_edf.sh
 # 
-#   DESCRIPTION:  ajoute une opé de course semaine et les relations de cd liées
+#   DESCRIPTION:  ajoute le pmt d'une facture EDF ds compte le payant. ajoute rel de C/D aussi sur les ious.
 # 
 #       OPTIONS:  ---
 #  REQUIREMENTS:  ---
@@ -18,27 +18,40 @@
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
-
-./commentaire.sh "début opé"
-./commentaire.sh "pmt courses"
+# charge FICHIERDEST
+. ./compta.conf
 # ajoute des courses par bq
 echo "util?"
 read UTIL
-echo "montant?"
+echo "NUM facture?"
+read NUM_FACT
+echo "MONTANT?"
 read MONTANT
-echo "libellé?"
-read LIB
-echo "date?"
-read DATE
-./commentaire "pmt des courses du $DATE par $UTIL"
-./journal -u "$UTIL" -d "$DATE" -l "$LIB" -m "$MONTANT" -n "6257COU" -N "Réceptions - Frais restauration - courses semaine"  -s D
-./journal -u "$UTIL" -d "$DATE" -l "$LIB" -m "$MONTANT" -n "512" -N "Banque" -s C
-# gérer comme d'habitude les deux cas de créances.
+echo "période couverte par la fa?"
+read PERIODE
+echo "date de la fa?"
+read DATEFA
+echo "échéance de la fa?"
+read ECHE
+echo "preuve de pmt?"
+ls -d /home/corentin/archives/preuve_pmt*
+ls -lR /home/corentin/archives/preuve_pmt*
+read PREUVE
+# libellé tjs le meme: pmt facture ft n° $NUM_FACT du $DATEFA échéance $ECHE pour la période $PERIODE par téléreglement par $UTIL
+LIB="pmt facture EDF n° ${NUM_FACT} du ${DATEFA} échéance ${ECHE} pour la période ${PERIODE} par téléreglement par ${UTIL} preuve pmt ${PREUVE}"
+COMMENTAIRE="pmt facture EDF"
+# utiliser la commande de commentaires
+./commentaire.sh "début d'opé"
+./commentaire.sh "$COMMENTAIRE"
+# paiement par utilisateur
+./journal -u "$UTIL"  -l "${LIB}" -m "${MONTANT}" -n "60612" -N "Achat fourniture non stockable (énergie - EDF)"  -s D
+./journal -u "$UTIL"  -l "$LIB" -m "$MONTANT" -n "512" -N "Banque" -s C
+
 
 case $UTIL in 
 	co)
 # gestion des ious:
-# cas 1 : c'est corentin qui a payé => il a une créance sur puce de montant/2 contre un transfert de ch 7xx
+# cas 1 : c'est corentin qui a payé => il a une créance sur puce de 16E contre un transfert de ch 7xx
 #  corentin
 #  401IOUPCdx	|		créance sur puce "401 (cré cli) IOU Puce doit à CO"
 #  		| 791 cx	.. car charge transférée
@@ -56,7 +69,7 @@ NVMONTANT=$(echo "scale=2; $MONTANT / 2" |bc)
 ./commentaire.sh "$COMMENTAIRE créance de co sur pu vue depuis compte pu"
 
 UTIL="pu"
-./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "65555COU" -N "Quote-part de charges sur opérations communes - COU" -s D
+./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "65555EDF" -N "Quote-part de charges sur opérations communes - EDF" -s D
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "411IOUPC" -N "IOU Puce doit à co" -s C
 UTIL="co"
 ;;
@@ -81,7 +94,7 @@ UTIL="co"
 
 ./comentaire.sh "$COMMENTAIRE créance de puce sur co vue depuis compte co"
 
-./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "65555COU" -N "Quote-part de charges sur opérations communes - COU" -s D
+./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "65555EDF" -N "Quote-part de charges sur opérations communes - EDF" -s D
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "411IOUCP" -N "IOU co doit à pu" -s C
 UTIL="pu"
 
@@ -90,6 +103,4 @@ UTIL="pu"
 		;;
 
 esac
-./commentaire.sh "fin opé"
-./commentaire.sh " "
 ./bal

@@ -213,7 +213,9 @@ date:util:numcompte:nomcompte:sensope:montantope:libope
 2011-10-17:co:401IOUCP:"IOU - co doit à pu":C:2:"corentin a pris argent pour cafés - ouverture"
 2011-10-16:co:6257:"Réceptions - Frais restauration":D:10.55:"restau  -  frites friteux"
 2011-10-16:co:512:"Banque":C:10.55:"restau  -  frites friteux"
+# fin opé
 
+# début opé
 # pmt facture ft
 2011-11-18:co:6261:"Frais postaux et télécom - ligne fixe FT":D:32:"pmt facture ft n° 0320376880 11i1 - 2B06 du 8 nov 2011 échéance 18 nov 2011 pour la période abo du 5/11/2011 au 4/01/2012 par téléreglement par co preuve pmt /home/corentin/archives/preuve_pmt_FT_8NOV2011_pournovdec/facturepayéeFTdu8nov2011_co.pdf"
 2011-11-18:co:512:"Banque":C:32:"pmt facture ft n° 0320376880 11i1 - 2B06 du 8 nov 2011 échéance 18 nov 2011 pour la période abo du 5/11/2011 au 4/01/2012 par téléreglement par co preuve pmt /home/corentin/archives/preuve_pmt_FT_8NOV2011_pournovdec/facturepayéeFTdu8nov2011_co.pdf"
@@ -223,6 +225,9 @@ date:util:numcompte:nomcompte:sensope:montantope:libope
 # pmt facture ft créance de co sur pu vue depuis compte pu
 2011-11-18:pu:65555FT:"Quote-part de charges sur opérations communes - FT":D:16:"pmt facture ft n° 0320376880 11i1 - 2B06 du 8 nov 2011 échéance 18 nov 2011 pour la période abo du 5/11/2011 au 4/01/2012 par téléreglement par co preuve pmt /home/corentin/archives/preuve_pmt_FT_8NOV2011_pournovdec/facturepayéeFTdu8nov2011_co.pdf"
 2011-11-18:pu:411IOUPC:"IOU Puce doit à co":C:16:"pmt facture ft n° 0320376880 11i1 - 2B06 du 8 nov 2011 échéance 18 nov 2011 pour la période abo du 5/11/2011 au 4/01/2012 par téléreglement par co preuve pmt /home/corentin/archives/preuve_pmt_FT_8NOV2011_pournovdec/facturepayéeFTdu8nov2011_co.pdf"
+# fin opé
+
+# début opé
 # pmt facture GDF
 2011-11-18:co:60612:"Achat fourniture non stockable (énergie - GDF)":D:53.16:"pmt facture GDF n° F513755948633 du 10/11/2011 échéance 24/11/2011 pour la période du 4/09/2011  au 7/11/2011 par téléreglement par co preuve pmt /home/corentin/archives/preuve_pmt_GDF/facturepayéeGDFdu10nov2011_co.pdf"
 2011-11-18:co:512:"Banque":C:53.16:"pmt facture GDF n° F513755948633 du 10/11/2011 échéance 24/11/2011 pour la période du 4/09/2011  au 7/11/2011 par téléreglement par co preuve pmt /home/corentin/archives/preuve_pmt_GDF/facturepayéeGDFdu10nov2011_co.pdf"
@@ -232,3 +237,18 @@ date:util:numcompte:nomcompte:sensope:montantope:libope
 # pmt facture GDF créance de co sur pu vue depuis compte pu
 2011-11-18:pu:65555GDF:"Quote-part de charges sur opérations communes - GDF":D:26:"pmt facture GDF n° F513755948633 du 10/11/2011 échéance 24/11/2011 pour la période du 4/09/2011  au 7/11/2011 par téléreglement par co preuve pmt /home/corentin/archives/preuve_pmt_GDF/facturepayéeGDFdu10nov2011_co.pdf"
 2011-11-18:pu:411IOUPC:"IOU Puce doit à co":C:26:"pmt facture GDF n° F513755948633 du 10/11/2011 échéance 24/11/2011 pour la période du 4/09/2011  au 7/11/2011 par téléreglement par co preuve pmt /home/corentin/archives/preuve_pmt_GDF/facturepayéeGDFdu10nov2011_co.pdf"
+# fin opé
+
+# début opé
+# pmt facture EDF
+2011-11-19:pu:60612:"Achat fourniture non stockable (énergie - EDF)":D:64.18:"pmt facture GDF n° 011E112061837 du 8/11/2011 échéance 23/11/2011 pour la période 7/09/2011 au 7/11/2011 par téléreglement par pu preuve pmt /home/corentin/archives/preuve_pmt_EDF/talonchq_facturepayéeEDFdu8nov2011_pu.pdf"
+2011-11-19:pu:512:"Banque":C:64.18:"pmt facture GDF n° 011E112061837 du 8/11/2011 échéance 23/11/2011 pour la période 7/09/2011 au 7/11/2011 par téléreglement par pu preuve pmt /home/corentin/archives/preuve_pmt_EDF/talonchq_facturepayéeEDFdu8nov2011_pu.pdf"
+# pmt facture EDF créance de puce sur co vue depuis compte pu
+2011-11-19:pu:401IOUCP:"IOU co doit à pu":D:32.09:"pmt facture EDF n° 011E112061837 du 8/11/2011 échéance 23/11/2011 pour la période 7/09/2011 au 7/11/2011 par téléreglement par pu preuve pmt /home/corentin/archives/preuve_pmt_EDF/talonchq_facturepayéeEDFdu8nov2011_pu.pdf"
+2011-11-19:pu:791:"Transferts de charge d'exploitation":C:32.09:"pmt facture EDF n° 011E112061837 du 8/11/2011 échéance 23/11/2011 pour la période 7/09/2011 au 7/11/2011 par téléreglement par pu preuve pmt /home/corentin/archives/preuve_pmt_EDF/talonchq_facturepayéeEDFdu8nov2011_pu.pdf"
+# pmt facture EDF créance de puce sur co vue depuis compte co
+2011-11-19:co:65555EDF:"Quote-part de charges sur opérations communes - EDF":D:32.09:"pmt facture EDF n° 011E112061837 du 8/11/2011 échéance 23/11/2011 pour la période 7/09/2011 au 7/11/2011 par téléreglement par pu preuve pmt /home/corentin/archives/preuve_pmt_EDF/talonchq_facturepayéeEDFdu8nov2011_pu.pdf"
+2011-11-19:co:411IOUCP:"IOU co doit à pu":C:32.09:"pmt facture EDF n° 011E112061837 du 8/11/2011 échéance 23/11/2011 pour la période 7/09/2011 au 7/11/2011 par téléreglement par pu preuve pmt /home/corentin/archives/preuve_pmt_EDF/talonchq_facturepayéeEDFdu8nov2011_pu.pdf"
+# fin opé
+
+
