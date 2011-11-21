@@ -1,0 +1,2 @@
+gawk: '$2
+gawk: ^ caractère non valide « ' » dans l'expression

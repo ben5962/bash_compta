@@ -251,28 +251,4 @@ date:util:numcompte:nomcompte:sensope:montantope:libope
 2011-11-19:co:411IOUCP:"IOU co doit à pu":C:32.09:"pmt facture EDF n° 011E112061837 du 8/11/2011 échéance 23/11/2011 pour la période 7/09/2011 au 7/11/2011 par téléreglement par pu preuve pmt /home/corentin/archives/preuve_pmt_EDF/talonchq_facturepayéeEDFdu8nov2011_pu.pdf"
 # fin opé
 
- 
-# début opé
-# pmt courses
-# # ajoute des courses par bq
-# pmt des courses du 2011-11-21 par pu
-2011-11-21:pu:6257COU:"Réceptions - Frais restauration - courses semaine":D:54.09:"courses semaine auchan drive"
-2011-11-21:pu:512:"Banque":C:54.09:"courses semaine auchan drive"
-# # gérer comme d'habitude les deux cas de créances.
-# # cas 2 : c'est puce qui a payé => elle a une créance
-# # puce
-# #  401IOUCPdx	|		créance sur puce '401 (cré cli) IOU Co doit à pu'
-# #  		| 791 cx	.. car charge transférée
-# #
-# # montant : MONTANT/2
-# courses semaine auchan drive créance de puce sur co vue depuis compte pu
-2011-11-21:pu:401IOUCP:"IOU co doit à pu":D:27.04:"courses semaine auchan drive"
-2011-11-21:pu:791:"Transferts de charge d'exploitation":C:27.04:"courses semaine auchan drive"
-# #         et dans le compte de co , il a une dette de 16E  contre un ajout de ch. 'ch transférée (sans typologie)'
-# #  co
-# #  65555dx	|            charge dans ta face par transfert
-# # 		| 411IOUCPcx		... pas encore payée ' 411(dette fou) IOU  co doit à pu'
-2011-11-21:co:65555COU:"Quote-part de charges sur opérations communes - COU":D:27.04:"courses semaine auchan drive"
-2011-11-21:co:411IOUCP:"IOU co doit à pu":C:27.04:"courses semaine auchan drive"
-# fin opé
-#  
+

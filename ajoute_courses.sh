@@ -18,10 +18,11 @@
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
-
+. compta.conf
+echo  " " >> "${FICHIERDEST}"
 ./commentaire.sh "début opé"
 ./commentaire.sh "pmt courses"
-# ajoute des courses par bq
+./commentaire.sh "# ajoute des courses par bq"
 echo "util?"
 read UTIL
 echo "montant?"
@@ -30,29 +31,29 @@ echo "libellé?"
 read LIB
 echo "date?"
 read DATE
-./commentaire "pmt des courses du $DATE par $UTIL"
+./commentaire.sh "pmt des courses du $DATE par $UTIL"
 ./journal -u "$UTIL" -d "$DATE" -l "$LIB" -m "$MONTANT" -n "6257COU" -N "Réceptions - Frais restauration - courses semaine"  -s D
 ./journal -u "$UTIL" -d "$DATE" -l "$LIB" -m "$MONTANT" -n "512" -N "Banque" -s C
-# gérer comme d'habitude les deux cas de créances.
-
+./commentaire.sh "# gérer comme d'habitude les deux cas de créances."
+COMMENTAIRE="$LIB"
 case $UTIL in 
 	co)
-# gestion des ious:
-# cas 1 : c'est corentin qui a payé => il a une créance sur puce de montant/2 contre un transfert de ch 7xx
-#  corentin
-#  401IOUPCdx	|		créance sur puce "401 (cré cli) IOU Puce doit à CO"
-#  		| 791 cx	.. car charge transférée
-#
-# montant : MONTANT/2
+./commentaire.sh "# gestion des ious:"
+./commenataire.sh "cas 1 : c'est corentin qui a payé => il a une créance sur puce de montant/2 contre un transfert de ch 7xx"
+./commentaire.sh "#  corentin"
+./commentaire.sh "#  401IOUPCdx	|		créance sur puce '401 (cré cli) IOU Puce doit à CO'"
+./commentaire.sh "		| 791 cx	.. car charge transférée"
+./commentaire.sh "#"
+./commentaire.sh "# montant : MONTANT/2"
 NVMONTANT=$(echo "scale=2; $MONTANT / 2" |bc)
 ./commentaire.sh "$COMMENTAIRE créance de co sur pu vue depuis compte co"
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "401IOUPC" -N "IOU Puce doit à co" -s D
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "791" -N "Transferts de charge d'exploitation" -s C 
 
-#         et dans le compte de puce , elle a une dette de 16E  contre un ajout de ch. "ch transférée (sans typologie)
-#  puce
-#  65555dx	|            charge dans ta face par transfert
-# 		| 411IOUPCcx		... pas encore payée " 411(dette fou) IOU  Puce doit à Co"
+./commentaire.sh "#         et dans le compte de puce , elle a une dette de 16E  contre un ajout de ch. 'ch transférée (sans typologie)'"
+./commentaire.sh "#  puce"
+./commentaire.sh "#  65555dx	|            charge dans ta face par transfert"
+./commentaire.sh "# 		| 411IOUPCcx		... pas encore payée ' 411(dette fou) IOU  Puce doit à Co'"
 ./commentaire.sh "$COMMENTAIRE créance de co sur pu vue depuis compte pu"
 
 UTIL="pu"
@@ -62,21 +63,21 @@ UTIL="co"
 ;;
 
 	pu)
-# cas 2 : c'est puce qui a payé => elle a une créance
-# puce
-#  401IOUCPdx	|		créance sur puce "401 (cré cli) IOU Co doit à pu"
-#  		| 791 cx	.. car charge transférée
-#
-# montant : MONTANT/2
+./commentaire.sh "# cas 2 : c'est puce qui a payé => elle a une créance"
+./commentaire.sh "# puce"
+./commentaire.sh "#  401IOUCPdx	|		créance sur puce '401 (cré cli) IOU Co doit à pu'"
+./commentaire.sh "#  		| 791 cx	.. car charge transférée"
+./commentaire.sh "#"
+./commentaire.sh "# montant : MONTANT/2"
 NVMONTANT=$(echo "scale=2; $MONTANT / 2" |bc)
 ./commentaire.sh "$COMMENTAIRE créance de puce sur co vue depuis compte pu"
 
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "401IOUCP" -N "IOU co doit à pu" -s D
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "791" -N "Transferts de charge d'exploitation" -s C 
-#         et dans le compte de co , il a une dette de 16E  contre un ajout de ch. "ch transférée (sans typologie)
-#  co
-#  65555dx	|            charge dans ta face par transfert
-# 		| 411IOUCPcx		... pas encore payée " 411(dette fou) IOU  co doit à pu"
+./commentaire.sh "#         et dans le compte de co , il a une dette de 16E  contre un ajout de ch. 'ch transférée (sans typologie)'"
+./commentaire.sh "#  co"
+./commentaire.sh "#  65555dx	|            charge dans ta face par transfert"
+./commentaire.sh "# 		| 411IOUCPcx		... pas encore payée ' 411(dette fou) IOU  co doit à pu'"
 UTIL="co"
 
 ./comentaire.sh "$COMMENTAIRE créance de puce sur co vue depuis compte co"

@@ -1,11 +1,11 @@
 #!/bin/bash - 
 #===============================================================================
 #
-#          FILE:  ajoute_loyer.sh
+#          FILE:  ajoute_gdf.sh
 # 
-#         USAGE:  ./ajoute_loyer.sh 
+#         USAGE:  ./ajoute_gdf.sh
 # 
-#   DESCRIPTION:  ajoute une opé d'avance de loyer par puce ou de remb par co 
+#   DESCRIPTION:  ajoute le pmt d'une facture GDF ds compte le payant. ajoute rel de C/D aussi sur les ious.
 # 
 #       OPTIONS:  ---
 #  REQUIREMENTS:  ---
@@ -18,32 +18,35 @@
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
-# si l'util est co, c'est un remboursement
-#. compta.conf
-FICHIERDEST="essai"
-# ajoute un remb de demi loyer par co
-./commentaire.sh "début opé"
-./commentaire.sh "remboursement de loyer par co"
-UTIL="co"
-MONTANT=350
-echo "mois de remb?"
-read LOB
-LIB="remboursement dette 1/2 loyer par corentin ${LOB}"
-echo "date?"
-read DATE
-./commentaire.sh " extinction de la dette:"
-./commentaire.sh " 512	|                 "
-./commentaire.sh "  /x	|                 "
-./commentaire.sh " ---------------        "
-./commentaire.sh " 	| 4O1             "
-./commentaire.sh "	| x/              "
-./journal -u "$UTIL" -d "$DATE" -l "$LIB" -m "$MONTANT" -n "401IOUCP" -N "IOU - Co doit à puce "  -s D
-./journal -u "$UTIL" -d "$DATE" -l "$LIB" -m "$MONTANT" -n "512" -N "Banque" -s C
+# charge FICHIERDEST
+. ./compta.conf
+# ajoute des courses par bq
+echo "util?"
+read UTIL
+echo "NUM facture?"
+read NUM_FACT
+echo "MONTANT?"
+read MONTANT
+echo "période couverte par la fa?"
+read PERIODE
+echo "date de la fa?"
+read DATEFA
+echo "échéance de la fa?"
+read ECHE
+echo "preuve de pmt?"
+ls -d /home/corentin/archives/preuve_pmt*
+ls -lR /home/corentin/archives/preuve_pmt*
+read PREUVE
+# libellé tjs le meme: pmt facture ft n° $NUM_FACT du $DATEFA échéance $ECHE pour la période $PERIODE par téléreglement par $UTIL
+LIB="pmt facture GDF n° ${NUM_FACT} du ${DATEFA} échéance ${ECHE} pour la période ${PERIODE} par téléreglement par ${UTIL} preuve pmt ${PREUVE}"
+COMMENTAIRE="pmt facture GDF"
+# utiliser la commande de commentaires
+./commentaire.sh "$COMMENTAIRE"
+# paiement par utilisateur
+./journal -u "$UTIL"  -l "${LIB}" -m "${MONTANT}" -n "60612" -N "Achat fourniture non stockable (énergie - GDF)"  -s D
+./journal -u "$UTIL"  -l "$LIB" -m "$MONTANT" -n "512" -N "Banque" -s C
 
 
-
-
-: <<commentaire
 case $UTIL in 
 	co)
 # gestion des ious:
@@ -53,7 +56,7 @@ case $UTIL in
 #  		| 791 cx	.. car charge transférée
 #
 # montant : MONTANT/2
-NVMONTANT=$(echo "scale=2; $MONTANT / 2" |bc)
+NVMONTANT=$(echo "$MONTANT / 2" |bc)
 ./commentaire.sh "$COMMENTAIRE créance de co sur pu vue depuis compte co"
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "401IOUPC" -N "IOU Puce doit à co" -s D
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "791" -N "Transferts de charge d'exploitation" -s C 
@@ -65,7 +68,7 @@ NVMONTANT=$(echo "scale=2; $MONTANT / 2" |bc)
 ./commentaire.sh "$COMMENTAIRE créance de co sur pu vue depuis compte pu"
 
 UTIL="pu"
-./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "65555EDF" -N "Quote-part de charges sur opérations communes - EDF" -s D
+./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "65555GDF" -N "Quote-part de charges sur opérations communes - GDF" -s D
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "411IOUPC" -N "IOU Puce doit à co" -s C
 UTIL="co"
 ;;
@@ -77,7 +80,7 @@ UTIL="co"
 #  		| 791 cx	.. car charge transférée
 #
 # montant : MONTANT/2
-NVMONTANT=$(echo "scale=2; $MONTANT / 2" |bc)
+NVMONTANT=$(echo "$MONTANT / 2" |bc)
 ./commentaire.sh "$COMMENTAIRE créance de puce sur co vue depuis compte pu"
 
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "401IOUCP" -N "IOU co doit à pu" -s D
@@ -87,10 +90,8 @@ NVMONTANT=$(echo "scale=2; $MONTANT / 2" |bc)
 #  65555dx	|            charge dans ta face par transfert
 # 		| 411IOUCPcx		... pas encore payée " 411(dette fou) IOU  co doit à pu"
 UTIL="co"
-
 ./comentaire.sh "$COMMENTAIRE créance de puce sur co vue depuis compte co"
-
-./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "65555EDF" -N "Quote-part de charges sur opérations communes - EDF" -s D
+./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "65555GDF" -N "Quote-part de charges sur opérations communes - GDF" -s D
 ./journal -u "$UTIL" -l "$LIB" -m "$NVMONTANT" -n "411IOUCP" -N "IOU co doit à pu" -s C
 UTIL="pu"
 
@@ -99,10 +100,4 @@ UTIL="pu"
 		;;
 
 esac
-commentaire
-
-
-
 ./bal
-
-

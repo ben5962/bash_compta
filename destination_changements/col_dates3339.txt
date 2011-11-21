@@ -1,0 +1,49 @@
+ofx_proc_status():
+Ofx entity this status is relevent to|SONRS 
+Severity|INFO
+Code|0, name: Success
+Description|The server successfully processed the request.
+
+ofx_proc_status():
+Ofx entity this status is relevent to|STMTTRNRS 
+Severity|INFO
+Code|0, name: Success
+Description|The server successfully processed the request.
+
+ofx_proc_account():
+Account ID|20041 01005 1081437V026
+Account name|Bank account 1081437V026
+Account type|CHECKING
+Currency|EUR
+Bank ID|20041
+Branch ID|01005
+Account #|1081437V026
+
+ofx_proc_statement():
+Currency|EUR
+Account ID|20041 01005 1081437V026
+Start date of this statement|Tue Jun 14 12:59:00 2011 CEST
+End date of this statement|Fri Oct 14 11:59:00 2011 CEST
+Ledger balance|14641.64
+Available balance|14641.64
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|PAYMENT: Electronic payment
+Date posted| 2011-10-10
+Total money amount|-32.00
+# of units|32.00
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUY6LLLO
+Name of payee or transaction description|PRELEVEMENT DE BOUYGUES TELECO
+
+ofx_proc_transaction():
+Account ID |20041 01005 1081437V026
+Transaction type|PAYMENT: Electronic payment
+Date posted| 2011-10-10
+Total money amount|-29.90
+# of units|29.90
+Unit price|1.00
+Financial institution's ID for this transaction|PIXUY6LGYF
+Name of payee or transaction description|PRELEVEMENT DE SA NORDNET
+

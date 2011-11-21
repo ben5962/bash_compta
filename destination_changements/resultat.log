@@ -1,0 +1,49 @@
+1 test_getmontantope en appel param normal doit renvoyer les valeurs attendues
+ COMMANDE: $(getmontantope -f temp > tmp); echo "cat du resultat de getmontantope: "; cat tmp; echo "cat de ce qui est attendu:"; cat resultat; diff -y --report-identical-files resultat tmp; ERR="$?"; affiche_test $ERR $SUCCES
+cat du resultat de getmontantope: 
+15138.55
+15138.55
+860.14
+860.14
+cat de ce qui est attendu:
+15138.55
+15138.55
+860.14
+860.14
+15138.55							15138.55
+15138.55							15138.55
+860.14								860.14
+860.14								860.14
+Les fichiers resultat et tmp sont identiques
+[OK] 
+2 test_getmontantope doit partir en message d'erreur si on ne lui fournit aucun param 
+ COMMANDE: getmontantope
+ERR: il faut au moins un arg pour getmontantope
+ERR: je vais afficher le message dutilsation de la fonction
+USAGE: getmontantope <fich_cpta> TODO: version -p(ipe)| --f(fichier) <fichiercompta>
+ERR: je vais sortir avec un msg d erreur de 65
+3 test_getmontantope doit partir en msg d'erreur si on appelle avec param -f mais sans fichier 
+ COMMANDE: getmontantope -f
+ERR parse des parms de getmontantope_interface : param f pas implémenté
+USAGE: getmontantope <fich_cpta> TODO: version -p(ipe)| --f(fichier) <fichiercompta>
+envoi de 4 lignes
+4
+5
+oups. et essai basique?
+affichage de temp
+date:util:numcompte:nomcompte:sensope:montantope:libope
+2011-09-05:co:512:"Banque":D:15138.55:"ouverture compte"
+2011-09-05:co:101:"Capital social":C:15138.55:"ouverture compte"
+2011-09-05:pu:512:"Banque":D:860.14:"ouverture compte"
+2011-09-05:pu:101:"Capital social":C:860.14:"ouverture compte"
+affichage de temp |getmontantope -p
+15138.55
+15138.55
+860.14
+860.14
+et hors le pipe est ce que le file fonctionne?
+4
+4 besoin de vérifier la capacité de grep à pouvoir renvoyer les lignes ne matchant pas [OK]
+5 test_getmontantope envoi via pipe. nombre de montants extraits : autant que de lignes de donnees [KO]
+6 test_getmontantope le champ selectionne est le bon s il ne comporte que des montants (chiffres et .) [OK]
+7 test_getmontantope envoi via param. nombre de montants extraits : autant que de lignes de donnees [KO]

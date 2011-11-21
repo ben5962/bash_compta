@@ -1,11 +1,11 @@
 #!/bin/bash - 
 #===============================================================================
 #
-#          FILE:  ajoute_loyer.sh
+#          FILE:  ajoute_edf.sh
 # 
-#         USAGE:  ./ajoute_loyer.sh 
+#         USAGE:  ./ajoute_edf.sh
 # 
-#   DESCRIPTION:  ajoute une opé d'avance de loyer par puce ou de remb par co 
+#   DESCRIPTION:  ajoute le pmt d'une facture EDF ds compte le payant. ajoute rel de C/D aussi sur les ious.
 # 
 #       OPTIONS:  ---
 #  REQUIREMENTS:  ---
@@ -18,32 +18,36 @@
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
-# si l'util est co, c'est un remboursement
-#. compta.conf
-FICHIERDEST="essai"
-# ajoute un remb de demi loyer par co
-./commentaire.sh "début opé"
-./commentaire.sh "remboursement de loyer par co"
-UTIL="co"
-MONTANT=350
-echo "mois de remb?"
-read LOB
-LIB="remboursement dette 1/2 loyer par corentin ${LOB}"
-echo "date?"
-read DATE
-./commentaire.sh " extinction de la dette:"
-./commentaire.sh " 512	|                 "
-./commentaire.sh "  /x	|                 "
-./commentaire.sh " ---------------        "
-./commentaire.sh " 	| 4O1             "
-./commentaire.sh "	| x/              "
-./journal -u "$UTIL" -d "$DATE" -l "$LIB" -m "$MONTANT" -n "401IOUCP" -N "IOU - Co doit à puce "  -s D
-./journal -u "$UTIL" -d "$DATE" -l "$LIB" -m "$MONTANT" -n "512" -N "Banque" -s C
+# charge FICHIERDEST
+. ./compta.conf
+# ajoute des courses par bq
+echo "util?"
+read UTIL
+echo "NUM facture?"
+read NUM_FACT
+echo "MONTANT?"
+read MONTANT
+echo "période couverte par la fa?"
+read PERIODE
+echo "date de la fa?"
+read DATEFA
+echo "échéance de la fa?"
+read ECHE
+echo "preuve de pmt?"
+ls -d /home/corentin/archives/preuve_pmt*
+ls -lR /home/corentin/archives/preuve_pmt*
+read PREUVE
+# libellé tjs le meme: pmt facture ft n° $NUM_FACT du $DATEFA échéance $ECHE pour la période $PERIODE par téléreglement par $UTIL
+LIB="pmt facture EDF n° ${NUM_FACT} du ${DATEFA} échéance ${ECHE} pour la période ${PERIODE} par téléreglement par ${UTIL} preuve pmt ${PREUVE}"
+COMMENTAIRE="pmt facture EDF"
+# utiliser la commande de commentaires
+./commentaire.sh "début d'opé"
+./commentaire.sh "$COMMENTAIRE"
+# paiement par utilisateur
+./journal -u "$UTIL"  -l "${LIB}" -m "${MONTANT}" -n "60612" -N "Achat fourniture non stockable (énergie - EDF)"  -s D
+./journal -u "$UTIL"  -l "$LIB" -m "$MONTANT" -n "512" -N "Banque" -s C
 
 
-
-
-: <<commentaire
 case $UTIL in 
 	co)
 # gestion des ious:
@@ -99,10 +103,4 @@ UTIL="pu"
 		;;
 
 esac
-commentaire
-
-
-
 ./bal
-
-

@@ -1,0 +1,16 @@
+LibOFX INFO: libofx_proc_file(): File format not specified, autodecting...
+(Above message occured on Line 4294967295, Column 4294967295)
+LibOFX INFO: libofx_proc_file(): Detected file format: OFX (Open Financial eXchange (OFX or QFX))
+(Above message occured on Line 4294967295, Column 4294967295)
+LibOFX STATUS: find_dtd():DTD found: /usr/share/libofx4/libofx/dtd/opensp.dcl
+(Above message occured on Line 4294967295, Column 4294967295)
+LibOFX STATUS: find_dtd():DTD found: /usr/share/libofx4/libofx/dtd/ofx160.dtd
+(Above message occured on Line 4294967295, Column 4294967295)
+LibOFX INFO: Created OfxDummyContainer to hold unsupported aggregate SIGNONMSGSRSV1
+(Above message occured on Line 1, Column 6)
+LibOFX INFO: Created OfxDummyContainer to hold unsupported aggregate SONRS
+(Above message occured on Line 1, Column 22)
+LibOFX INFO: Created OfxDummyContainer to hold unsupported aggregate BANKMSGSRSV1
+(Above message occured on Line 1, Column 129)
+LibOFX INFO: Created OfxDummyContainer to hold unsupported aggregate STMTTRNRS
+(Above message occured on Line 1, Column 143)
