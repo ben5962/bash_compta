@@ -193,7 +193,7 @@ debecho "entree dans $FUNCNAME"
 F_CPTA="temp"
 echo "affichage de $F_CPTA"
 cat $F_CPTA
-echo "affichage de $F_CPTA | getmontantope -p"
+echo "affichage de $F_CPTA |getmontantope -p"
 cat $F_CPTA |getmontantope -p
 }
 
