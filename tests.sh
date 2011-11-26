@@ -16,7 +16,7 @@ TEST_KO="0"
 TOT_TEST="0"
 SUCCES="0"
 PROG_PAS_INSTALLE=150
-DEBUG=""
+DEBUG="1"
 ####################
 # utilitaire
 #####################
@@ -188,6 +188,15 @@ rm -f temp
 rm -f resultat
 }
 
+function essai_basique_pipe(){
+debecho "entree dans $FUNCNAME"
+F_CPTA="temp"
+echo "affichage de $F_CPTA"
+cat $F_CPTA
+echo "affichage de $F_CPTA | getmontantope -p"
+cat $F_CPTA |getmontantope -p
+}
+
 function renvoie4lignes(){
 debecho "entree dans $FUNCNAME"
 F_CPTA="temp"
@@ -201,8 +210,7 @@ function comptenblignes(){
 debecho "entree dans $FUNCNAME"
 F_CPTA="temp"
 cat $F_CPTA |\
-	sed -n '2,$ p' |wc -l
-
+	wc -l
 }
 
 renvoie4lignesparam(){
@@ -237,10 +245,15 @@ incremente_compteur
 echo -e "$COMPTEUR $FUNCNAME doit partir en message d'erreur si on ne lui fournit aucun param \n $(COMMANDE='getmontantope'; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE")"
 incremente_compteur
 echo -e "$COMPTEUR $FUNCNAME doit partir en msg d'erreur si on appelle avec param -f mais sans fichier \n $(COMMANDE='getmontantope -f'; echo "COMMANDE: $COMMANDE"; eval "$COMMANDE")"
-#renvoie4lignes
-#comptenblignes
+
+echo "envoi de 4 lignes"
+renvoie4lignes
+comptenblignes
+echo "oups. et essai basique?"
+essai_basique_pipe
 #invertmatchok
-#renvoie4lignesparam
+echo "et hors le pipe est ce que le file fonctionne?"
+renvoie4lignesparam
 incremente_compteur
 echo "$COMPTEUR besoin de vérifier la capacité de grep à pouvoir renvoyer les lignes ne matchant pas $(affiche_test "invert match fonctionne" "$(invertmatchok)")"
 incremente_compteur
@@ -1093,26 +1106,32 @@ rm -f encol
 rm -f rfc
 
 } # fin de cleanup
-function normal(){
-modifdate encol > atester
-diff -y --report-identical-files rfc atester
-
+function appel_par_fichier(){
+modifdate -f encol > atester
+diff --report-identical-files rfc atester
 rm -f atester
 } # fin de normal
 
 
 preload
-normal
+appel_par_fichier
 cleanup
 }
 
+function test_interface_ofx_to_bq(){
+# message err si pas de param + usage:
+# interface_ofx_to_bq
+#ok
+# fonctionnement normal
+interface_ofx_to_bq -f todo.ofx -u co
 
+}
 
 function TEST(){
 #############################
 # tests en cours de mise au point 
 #############################
-
+##test_interface_ofx_to_bq
 test_modifdate
 # getallnumcomptes sera testé correctement lorsque son utilité sera prouvée
 #test_getallnumcomptes
@@ -1120,7 +1139,7 @@ test_modifdate
 #test_errsipasbq
 # test montant opé paramétrisé ok
 # test montant opé les tests sont sous forme de heredoc
-#test_getmontantope
+test_getmontantope
 #test_modifdateawk
 #test_getlinesfromuser
 #test_getallusers

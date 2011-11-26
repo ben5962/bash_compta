@@ -133,19 +133,6 @@ ofxdump /home/corentin/Téléchargements/*.ofx 2>OFXDUMP_ERR.TXT |\
 ##################################
 
 
-# prend deux fichiers au format compta.txt en entree
-#prendre deux parametres
-#si nb param <2 sortir 
-function rapprochement(){
-function usage(){ echo "$0 <fich cpta|512 trié[montant]> <bq trié[montant]>"; }
-[ $# -lt 2 ] && echo "ERR: $0: nombre de param insuffisant: 2 attendus $# obtenus" \
-&& exit  $ERR_NB_PARAM
-F_CPTA="$1"
-F_BQ="$2"
-##TODO ecrire la fonction de rapprochement bancaire (main)
-}
-
-
 #verifier que les deux param correspondent à des ficheirs 
 # restreints aux comptes bancaires
 #pour chaque fichier faire...
@@ -310,7 +297,7 @@ return ${SUCCES}
 
 
 function modifdate(){
-	cat "$1" |\
+	
 	 	# GAWK ACCEPTE PAS SEPARATEURS MULTI CARACTERES	
 		# faire passer les champs 
 		# de :
@@ -320,6 +307,7 @@ function modifdate(){
 		# ainsi on obtient
 		# Date posted| unedateàretoucher
 		# et on travaile à partir de ca.
+	function modit(){
 	sed -e 's/: /|/' -e 's/^ *//' |\
 		# echo ainsi on peut se servir de | comme séparateur
 	gawk -F"|" \
@@ -344,7 +332,17 @@ function modifdate(){
 		close(cmd);
 		print CHDATEPOSTED"| "DATERFC;
 	};'
-
+} # fin de modit
+while getopts ":pf:u:" argu
+do
+	case $argu in
+		p) #cas du pipe
+		modit	;;
+		f) # cas du file
+		FICHIER=${OPTARG}; cat "${FICHIER}" | modit	;;
+		*) echo "${OPTARG} pas prevu";;
+	esac
+done	
 }
 
 
@@ -466,6 +464,36 @@ p
 ' 
 
 }
+
+
+
+function interface_ofx_to_bq(){
+# va proposer un nom de fichier ofx et va normaliser tous ces pipes.
+FONCTION="$FUNCNAME"
+function usage(){
+echo "$FONCTION -u <co|pu>  -f <fichier.ofx>"
+echo "prend un fichier de type ofx. renvoie un fichier de type compta.txt"
+}
+aumoinsun "$@"
+
+while getopts ":u:f:" OPT
+do
+	case $OPT in
+		u) UTIL="${OPTARG}";;
+		f) OFICHIER="${OPTARG}" ;;
+		*) echo "${OPTARG} : pas implémenté";;
+esac
+done
+shift $(( ${OPTIND} - 1 ))
+
+ofx_to_encol "${OFICHIER}" \
+	|modifdate -p \
+#	|encol_daterfc3339_to_enligne_precompta\
+	
+echo "util vaut $UTIL"
+echo "fichier vaut $OFICHIER"
+
+}
 #############################################################
 # 4. méler les deux fichiers en préfixant chaque entree de compta ou bq
 #    et produire un contenu trié par montant puis par date puis par bq ou compta
@@ -512,7 +540,7 @@ FONCTION=${FUNCNAME}
 
 # gestion des params pour arbitrer les appels
 function getmontantope_interface(){
-#debecho "\$\@ vaut : $@"
+debecho "\$\@ vaut : $@"
 # p avec 0 argument donc p(rien)
 # f avec 1 argument donc f":"
 # traitement des erreurs donc ":" initial
