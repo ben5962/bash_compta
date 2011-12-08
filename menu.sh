@@ -1,5 +1,7 @@
 #!/bin/bash
-. ./compta.conf
+# ne doit être sourcé que dans les fichiers extérieurs faisant appel aux commandes. les commandes ne doivent
+# pas être invoquées directement
+#. ./compta.conf
 CALLER=`basename $0`
 TEMP="tmp"
 SUCCES=0
