@@ -276,3 +276,5 @@ date:util:numcompte:nomcompte:sensope:montantope:libope
 2011-11-21:co:411IOUCP:"IOU co doit à pu":C:27.04:"courses semaine auchan drive"
 # fin opé
 #  
+2011-11-29:co:6248:"Transport - divers - carburant":D:23.39:"plein essence"
+2011-11-29:co:512:"Banque":C:23.39:"plein essence"
