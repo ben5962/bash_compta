@@ -1,4 +1,5 @@
 please watch it in raw mode (no line wrap)
+
 bashcompta
 ----------
 intentions d utilisation:
